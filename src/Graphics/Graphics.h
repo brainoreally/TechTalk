@@ -11,11 +11,11 @@ public:
 	Graphics();
 	~Graphics();
 	void draw();
-	bool isRunning();
+	bool is_running();
 
 private:
 	GLint resolutionX, resolutionY;
-	GLuint VBO, EBO;
+	GLuint VBO, EBO, VAO;
 	GLfloat cubePositionX;
 	GLFWwindow* window;
 };

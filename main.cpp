@@ -5,7 +5,7 @@ int main() {
     Graphics graphics = Graphics();
 
     // Main loop
-    while (graphics.isRunning()) {
+    while (graphics.is_running()) {
         graphics.draw();
     }
 

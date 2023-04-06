@@ -10,24 +10,55 @@ Graphics::Graphics() {
 
     // Define the vertices of the cube
     GLfloat vertices[] = {
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, 0.5f, -0.5f,
-        0.5f, 0.5f, -0.5f,
-        0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f, 0.5f,
-        -0.5f, 0.5f, 0.5f,
-        0.5f, 0.5f, 0.5f,
-        0.5f, -0.5f, 0.5f
+        // Front face
+        -0.5f, -0.5f, 0.5f, // Vertex 0
+        -0.5f, 0.5f, 0.5f,  // Vertex 1
+        0.5f, 0.5f, 0.5f,   // Vertex 2
+        0.5f, -0.5f, 0.5f,  // Vertex 3
+        // Back face
+        -0.5f, -0.5f, -0.5f, // Vertex 4
+        -0.5f, 0.5f, -0.5f,  // Vertex 5
+        0.5f, 0.5f, -0.5f,   // Vertex 6
+        0.5f, -0.5f, -0.5f,  // Vertex 7
+        // Top face
+        -0.5f, 0.5f, 0.5f,   // Vertex 8
+        -0.5f, 0.5f, -0.5f,  // Vertex 9
+        0.5f, 0.5f, -0.5f,   // Vertex 10
+        0.5f, 0.5f, 0.5f,   // Vertex 11
+        // Bottom face
+        -0.5f, -0.5f, 0.5f,  // Vertex 12
+        -0.5f, -0.5f, -0.5f, // Vertex 13
+        0.5f, -0.5f, -0.5f,  // Vertex 14
+        0.5f, -0.5f, 0.5f,  // Vertex 15
+        // Right face
+        0.5f, -0.5f, 0.5f,  // Vertex 16
+        0.5f, 0.5f, 0.5f,   // Vertex 17
+        0.5f, 0.5f, -0.5f,  // Vertex 18
+        0.5f, -0.5f, -0.5f, // Vertex 19
+        // Left face
+        -0.5f, -0.5f, 0.5f,  // Vertex 20
+        -0.5f, 0.5f, 0.5f,   // Vertex 21
+        -0.5f, 0.5f, -0.5f,  // Vertex 22
+        -0.5f, -0.5f, -0.5f, // Vertex 23
     };
 
+
     // Define the faces of the cube
-    GLubyte indices[] = {
-        0, 1, 2, 3,
-        3, 2, 6, 7,
-        7, 6, 5, 4,
-        4, 5, 1, 0,
-        5, 6, 2, 1,
-        7, 4, 0, 3
+    GLushort indices[] = {
+        0, 1, 2,  // Front face
+        2, 3, 0,
+        4, 5, 6,  // Back face
+        6, 7, 4,
+        8, 9, 10, // Top face
+        10, 11, 8,
+        12, 13, 14, // Bottom face
+        14, 15, 12,
+        16, 17, 18, // Right face
+        18, 19, 16,
+        20, 21, 22, // Left face
+        22, 23, 20,
+        // Closing triangle to complete the index strip
+        0, 1, 2,
     };
 
     // Initialize GLFW
@@ -102,23 +133,26 @@ void Graphics::draw() {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
 
-    // Update the cubes position
+    // Update the cube's position
     cubePositionX += 0.01f;
     if (cubePositionX > 2.0f) cubePositionX = 0.0f;
 
-    // Traslate to draw cube in it's world position
+    // Translate to draw the cube in its world position
     glTranslatef(cubePositionX, 0, 0);
 
     // Draw the cube
-    glDrawElements(GL_QUADS, 24, GL_UNSIGNED_BYTE, (GLvoid*)0);
+    glDrawElements(GL_TRIANGLE_STRIP, 28, GL_UNSIGNED_SHORT, 0);
 
     // Translate back to the camera position
     glTranslatef(-cubePositionX, 0, 0);
+
+    // Disable vertex attribute array
+    glDisableVertexAttribArray(0);
 
     // Swap front and back buffers
     glfwSwapBuffers(window);
 }
 
-bool Graphics::isRunning() {
+bool Graphics::is_running() {
     return !glfwWindowShouldClose(window);
 }
