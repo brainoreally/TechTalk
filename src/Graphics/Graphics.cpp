@@ -2,11 +2,11 @@
 
 Graphics::Graphics() {
     // Define screen size
-    resolutionX = 800;
-    resolutionY = 600;
+    resolutionX = 1800;
+    resolutionY = 1200;
 
     // Initialize cube X position
-    cubePositionX = 0.0f;
+    cubePositionX = -2.0f;
 
     // Define the vertices of the cube
     GLfloat vertices[] = {
@@ -20,26 +20,6 @@ Graphics::Graphics() {
         -0.5f, 0.5f, -0.5f,  // Vertex 5
         0.5f, 0.5f, -0.5f,   // Vertex 6
         0.5f, -0.5f, -0.5f,  // Vertex 7
-        // Top face
-        -0.5f, 0.5f, 0.5f,   // Vertex 8
-        -0.5f, 0.5f, -0.5f,  // Vertex 9
-        0.5f, 0.5f, -0.5f,   // Vertex 10
-        0.5f, 0.5f, 0.5f,   // Vertex 11
-        // Bottom face
-        -0.5f, -0.5f, 0.5f,  // Vertex 12
-        -0.5f, -0.5f, -0.5f, // Vertex 13
-        0.5f, -0.5f, -0.5f,  // Vertex 14
-        0.5f, -0.5f, 0.5f,  // Vertex 15
-        // Right face
-        0.5f, -0.5f, 0.5f,  // Vertex 16
-        0.5f, 0.5f, 0.5f,   // Vertex 17
-        0.5f, 0.5f, -0.5f,  // Vertex 18
-        0.5f, -0.5f, -0.5f, // Vertex 19
-        // Left face
-        -0.5f, -0.5f, 0.5f,  // Vertex 20
-        -0.5f, 0.5f, 0.5f,   // Vertex 21
-        -0.5f, 0.5f, -0.5f,  // Vertex 22
-        -0.5f, -0.5f, -0.5f, // Vertex 23
     };
 
 
@@ -49,16 +29,14 @@ Graphics::Graphics() {
         2, 3, 0,
         4, 5, 6,  // Back face
         6, 7, 4,
-        8, 9, 10, // Top face
-        10, 11, 8,
-        12, 13, 14, // Bottom face
-        14, 15, 12,
-        16, 17, 18, // Right face
-        18, 19, 16,
-        20, 21, 22, // Left face
-        22, 23, 20,
-        // Closing triangle to complete the index strip
-        0, 1, 2,
+        1, 5, 6, // Top face
+        6, 2, 1,
+        0, 4, 7, // Bottom face
+        7, 3, 0,
+        3, 2, 6, // Right face
+        6, 7, 3,
+        0, 1, 5, // Left face
+        5, 4, 0,
     };
 
     // Initialize GLFW
@@ -92,12 +70,12 @@ Graphics::Graphics() {
     // Set up the projection matrix
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(60, 1, 0.1, 100);
+    gluPerspective(90, 1, 0.1, 100);
 
     // Set up the view matrix
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gluLookAt(0, 0, 5, 0, 0, 0, 0, 1, 0);
+    gluLookAt(0, 3, 3, 0, 0, 0, 0, 1, 0);
 
     // Define the vertex buffer object (VBO) and element buffer object (EBO)
     glGenBuffers(1, &VBO);
@@ -135,13 +113,13 @@ void Graphics::draw() {
 
     // Update the cube's position
     cubePositionX += 0.01f;
-    if (cubePositionX > 2.0f) cubePositionX = 0.0f;
+    if (cubePositionX > 2.0f) cubePositionX = -2.0f;
 
     // Translate to draw the cube in its world position
     glTranslatef(cubePositionX, 0, 0);
 
     // Draw the cube
-    glDrawElements(GL_TRIANGLE_STRIP, 28, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_TRIANGLE_STRIP, 24, GL_UNSIGNED_SHORT, 0);
 
     // Translate back to the camera position
     glTranslatef(-cubePositionX, 0, 0);
