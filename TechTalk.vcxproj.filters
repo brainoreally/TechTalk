@@ -16,6 +16,9 @@
     <Filter Include="Source Files\Graphics">
       <UniqueIdentifier>{a7e1221b-5bd2-4cbd-8873-484252c671ec}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Shaders">
+      <UniqueIdentifier>{2da66136-1ffe-48d6-8306-cf06d7606bf8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -29,5 +32,13 @@
     <ClInclude Include="src\Graphics\Graphics.h">
       <Filter>Source Files\Graphics</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\shaders\fragment.glsl">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="src\shaders\vertex.glsl">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

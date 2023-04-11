@@ -64,6 +64,31 @@ Graphics::Graphics() {
         return;
     }
 
+    // Compile and link the shader program
+    const GLchar* vertexShaderSource = loadShaderSource("src/shaders/vertex.glsl");
+    vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+
+    const GLchar* fragmentShaderSource = loadShaderSource("src/shaders/fragment.glsl");
+    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
+
+    shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    // delete shaders
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    // Set up the uniform locations
+    modelLoc = glGetUniformLocation(shaderProgram, "model");
+    viewLoc = glGetUniformLocation(shaderProgram, "view");
+    projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+
     // Set up the viewport
     glViewport(0, 0, resolutionX, resolutionY);
 
@@ -71,11 +96,13 @@ Graphics::Graphics() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(90, 1, 0.1, 100);
+    glGetFloatv(GL_PROJECTION_MATRIX, *projectionMatrix);
 
     // Set up the view matrix
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gluLookAt(0, 3, 3, 0, 0, 0, 0, 1, 0);
+    glGetFloatv(GL_MODELVIEW_MATRIX, *viewMatrix);
 
     // Define the vertex buffer object (VBO) and element buffer object (EBO)
     glGenBuffers(1, &VBO);
@@ -95,8 +122,12 @@ Graphics::Graphics() {
 }
 
 Graphics::~Graphics() {
+    glUseProgram(0);
+    glDeleteProgram(shaderProgram);
     glfwTerminate();
     delete window;
+    delete projectionMatrix;
+    delete viewMatrix;
 }
 
 void Graphics::draw() {
@@ -133,4 +164,20 @@ void Graphics::draw() {
 
 bool Graphics::is_running() {
     return !glfwWindowShouldClose(window);
+}
+
+const GLchar* Graphics::loadShaderSource(const char* filename)
+{
+    std::ifstream file(filename);
+    if (!file) {
+        std::cerr << "Error: Could not open file " << filename << std::endl;
+        return "";
+    }
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    
+    file.close();
+    
+    return buffer.str().c_str();
 }
