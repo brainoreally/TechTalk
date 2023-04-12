@@ -1,5 +1,6 @@
 #pragma once
 
+#include "..\Node\Node.h"
 #include <GL/glew.h>
 #include <GL/glu.h>
 #include <GLFW/glfw3.h>
@@ -23,9 +24,10 @@ public:
 private:
 	std::string loadShaderSource(const char* filename);
 	GLint resolutionX, resolutionY;
-	GLuint VBO, EBO, VAO;
 	GLuint vertexShader, fragmentShader, shaderProgram;
 	GLint modelLoc, viewLoc, projectionLoc;
 	GLfloat cubePositionX;
 	GLFWwindow *window;
+
+	Node node;
 };

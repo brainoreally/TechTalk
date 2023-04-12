@@ -19,6 +19,9 @@
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{2da66136-1ffe-48d6-8306-cf06d7606bf8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Node">
+      <UniqueIdentifier>{db51b123-6b42-42da-8b6c-cc04b1552e6e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -27,10 +30,16 @@
     <ClCompile Include="src\Graphics\Graphics.cpp">
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="src\Node\Node.cpp">
+      <Filter>Source Files\Node</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Graphics.h">
       <Filter>Source Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Node\Node.h">
+      <Filter>Source Files\Node</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
