@@ -7,6 +7,11 @@
 #include <fstream>
 #include <sstream>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
+
 class Graphics
 {
 public:
@@ -16,12 +21,11 @@ public:
 	bool is_running();
 
 private:
-	const GLchar* loadShaderSource(const char* filename);
+	std::string loadShaderSource(const char* filename);
 	GLint resolutionX, resolutionY;
-	GLuint VBO, EBO;
+	GLuint VBO, EBO, VAO;
 	GLuint vertexShader, fragmentShader, shaderProgram;
 	GLint modelLoc, viewLoc, projectionLoc;
 	GLfloat cubePositionX;
-	GLfloat projectionMatrix[4][4], viewMatrix[4][4];
 	GLFWwindow *window;
 };

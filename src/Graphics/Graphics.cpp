@@ -8,7 +8,7 @@ Graphics::Graphics() {
     // Initialize cube X position
     cubePositionX = -2.0f;
 
-    // Define the vertices of the cube
+    // Define the vertices and indices of the cube
     GLfloat vertices[] = {
         // Front face
         -0.5f, -0.5f, 0.5f, // Vertex 0
@@ -22,8 +22,6 @@ Graphics::Graphics() {
         0.5f, -0.5f, -0.5f,  // Vertex 7
     };
 
-
-    // Define the faces of the cube
     GLushort indices[] = {
         0, 1, 2,  // Front face
         2, 3, 0,
@@ -64,13 +62,18 @@ Graphics::Graphics() {
         return;
     }
 
+    // Set up the viewport
+    glViewport(0, 0, resolutionX, resolutionY);
+
     // Compile and link the shader program
-    const GLchar* vertexShaderSource = loadShaderSource("src/shaders/vertex.glsl");
+    std::string vertexSourceCode = loadShaderSource("src/shaders/vertex.glsl");
+    const GLchar* vertexShaderSource = vertexSourceCode.c_str();
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
 
-    const GLchar* fragmentShaderSource = loadShaderSource("src/shaders/fragment.glsl");
+    std::string fragmentShaderCode = loadShaderSource("src/shaders/fragment.glsl");
+    const GLchar* fragmentShaderSource = fragmentShaderCode.c_str();
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
@@ -79,6 +82,20 @@ Graphics::Graphics() {
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
+
+    // Check if the linking was successful
+    GLint linkStatus;
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linkStatus);
+    if (linkStatus != GL_TRUE) {
+        // Linking failed, get the error message
+        GLint infoLogLength;
+        glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &infoLogLength);
+        char* infoLog = new char[infoLogLength];
+        glGetProgramInfoLog(shaderProgram, infoLogLength, NULL, infoLog);
+        std::cerr << "Shader program linking failed: " << infoLog << std::endl;
+        delete[] infoLog;
+        exit(EXIT_FAILURE);
+    }
 
     // delete shaders
     glDeleteShader(vertexShader);
@@ -89,84 +106,73 @@ Graphics::Graphics() {
     viewLoc = glGetUniformLocation(shaderProgram, "view");
     projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 
-    // Set up the viewport
-    glViewport(0, 0, resolutionX, resolutionY);
-
-    // Set up the projection matrix
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(90, 1, 0.1, 100);
-    glGetFloatv(GL_PROJECTION_MATRIX, *projectionMatrix);
-
-    // Set up the view matrix
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    gluLookAt(0, 3, 3, 0, 0, 0, 0, 1, 0);
-    glGetFloatv(GL_MODELVIEW_MATRIX, *viewMatrix);
-
-    // Define the vertex buffer object (VBO) and element buffer object (EBO)
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    // Bind the VBO and EBO to their respective buffer types
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-    // Copy the vertices and indices into their respective buffers
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
     // Define the vertex attributes
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-}
-
-Graphics::~Graphics() {
-    glUseProgram(0);
-    glDeleteProgram(shaderProgram);
-    glfwTerminate();
-    delete window;
-    delete projectionMatrix;
-    delete viewMatrix;
-}
-
-void Graphics::draw() {
-    // Clear the screen
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    // Bind the VBO and EBO to their respective buffer types
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
 
     // Enable vertex attribute array and set the vertex attribute pointer
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
 
-    // Update the cube's position
-    cubePositionX += 0.01f;
-    if (cubePositionX > 2.0f) cubePositionX = -2.0f;
+    // Define the vertex buffer object (VBO) and vertex array object (VAO)
+    glGenBuffers(1, &VBO);
+    // Bind the VBO and VAO to their respective buffer types
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    // Translate to draw the cube in its world position
-    glTranslatef(cubePositionX, 0, 0);
+    // Copy the vertices and indices into their respective buffers
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    // Draw the cube
-    glDrawElements(GL_TRIANGLE_STRIP, 24, GL_UNSIGNED_SHORT, 0);
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    // Translate back to the camera position
-    glTranslatef(-cubePositionX, 0, 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+}
 
+Graphics::~Graphics() {
     // Disable vertex attribute array
     glDisableVertexAttribArray(0);
+    glUseProgram(0);
+    glDeleteProgram(shaderProgram);
+    glfwTerminate();
+}
 
-    // Swap front and back buffers
+void Graphics::draw() {
+    cubePositionX += 0.01f;
+    if (cubePositionX >= 2.0f)
+        cubePositionX = -2.0f;
+
+    // Clear the screen
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Set the model matrix
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(cubePositionX, 0.0f, 0.0f));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+    // Set the view matrix
+    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 1.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+    // Set the projection matrix
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)resolutionX / (float)resolutionY, 0.1f, 100.0f);
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+    // Activate the shader program
+    glUseProgram(shaderProgram);
+
+    // Draw the cube
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
+
+    // Swap buffers and poll events
     glfwSwapBuffers(window);
+    glfwPollEvents();
 }
 
 bool Graphics::is_running() {
     return !glfwWindowShouldClose(window);
 }
 
-const GLchar* Graphics::loadShaderSource(const char* filename)
+std::string Graphics::loadShaderSource(const char* filename)
 {
     std::ifstream file(filename);
     if (!file) {
@@ -179,5 +185,5 @@ const GLchar* Graphics::loadShaderSource(const char* filename)
     
     file.close();
     
-    return buffer.str().c_str();
+    return buffer.str();
 }
