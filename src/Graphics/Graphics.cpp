@@ -75,9 +75,16 @@ Graphics::Graphics() {
     projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 
     node = Node(modelLoc);
+    initCL();
 }
 
 Graphics::~Graphics() {
+    // Clean up
+    clReleaseMemObject(buffer);
+    clReleaseKernel(kernel);
+    clReleaseProgram(program);
+    clReleaseCommandQueue(queue);
+    clReleaseContext(context);
     // Disable vertex attribute array
     glDisableVertexAttribArray(0);
     glUseProgram(0);
@@ -102,9 +109,15 @@ void Graphics::draw() {
     // Activate the shader program
     glUseProgram(shaderProgram);
 
-    cubePositionX += 0.01f;
-    if (cubePositionX >= 2.0f)
-        cubePositionX = -2.0f;
+
+    size_t global_size[1] = { 1 };
+    size_t local_size[1] = { 1 };
+
+    // Execute the kernel
+    err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, global_size, local_size, 0, NULL, NULL);
+
+    // Copy the updated value of cubePositionX from the buffer
+    err = clEnqueueReadBuffer(queue, buffer, CL_TRUE, 0, sizeof(float), &cubePositionX, 0, NULL, NULL);
 
     node.draw(glm::vec3(cubePositionX, 0.0f, -5.0f));
     node.draw(glm::vec3(cubePositionX, 1.5f, -5.0f));
@@ -117,6 +130,35 @@ void Graphics::draw() {
 
 bool Graphics::is_running() {
     return !glfwWindowShouldClose(window);
+}
+
+void Graphics::initCL()
+{
+    clGetPlatformIDs(1, &platform, NULL);
+    clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL);
+    context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
+    queue = clCreateCommandQueueWithProperties(context, device, 0, &err);
+
+    // Compile and load the kernel
+    const char* kernel_source =
+        "__kernel void update_cube_position(__global float* cubePositionX)\n"
+        "{\n"
+        "    cubePositionX[0] += 0.01f;\n"
+        "    if (cubePositionX[0] >= 2.0f)\n"
+        "        cubePositionX[0] = -2.0f;\n"
+        "}\n";
+    program = clCreateProgramWithSource(context, 1, &kernel_source, NULL, &err);
+    clBuildProgram(program, 1, &device, NULL, NULL, NULL);
+    kernel = clCreateKernel(program, "update_cube_position", &err);
+
+    // Create a buffer to hold the value of cubePositionX
+    buffer = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float), NULL, &err);
+
+    // Copy the value of cubePositionX to the buffer
+    err = clEnqueueWriteBuffer(queue, buffer, CL_TRUE, 0, sizeof(float), &cubePositionX, 0, NULL, NULL);
+
+    // Set the argument of the kernel to the buffer
+    err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &buffer);
 }
 
 std::string Graphics::loadShaderSource(const char* filename)
