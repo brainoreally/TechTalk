@@ -22,6 +22,9 @@
     <Filter Include="Source Files\Node">
       <UniqueIdentifier>{db51b123-6b42-42da-8b6c-cc04b1552e6e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\NeuralNetwork">
+      <UniqueIdentifier>{4c8edf96-69cc-4ba2-aede-5b887d79f6d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -33,6 +36,9 @@
     <ClCompile Include="src\Node\Node.cpp">
       <Filter>Source Files\Node</Filter>
     </ClCompile>
+    <ClCompile Include="src\NeurtalNetwork\NeuralNetwork.cpp">
+      <Filter>Source Files\NeuralNetwork</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Graphics.h">
@@ -40,6 +46,9 @@
     </ClInclude>
     <ClInclude Include="src\Node\Node.h">
       <Filter>Source Files\Node</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NeurtalNetwork\NeuralNetwork.h">
+      <Filter>Source Files\NeuralNetwork</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
