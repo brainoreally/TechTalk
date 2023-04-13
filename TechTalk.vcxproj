@@ -150,12 +150,12 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\Graphics\Graphics.cpp" />
     <ClCompile Include="src\NeurtalNetwork\NeuralNetwork.cpp" />
-    <ClCompile Include="src\Node\Node.cpp" />
+    <ClCompile Include="src\NeurtalNetwork\Neuron\Neuron.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Graphics.h" />
     <ClInclude Include="src\NeurtalNetwork\NeuralNetwork.h" />
-    <ClInclude Include="src\Node\Node.h" />
+    <ClInclude Include="src\NeurtalNetwork\Neuron\Neuron.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\fragment.glsl" />

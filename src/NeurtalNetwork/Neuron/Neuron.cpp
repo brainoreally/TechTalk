@@ -1,8 +1,8 @@
-#include "Node.h"
+#include "Neuron.h"
 
-Node::Node() {}
+Neuron::Neuron() {}
 
-Node::Node(GLint modelLocation)
+Neuron::Neuron(GLint modelLocation)
 {
     modelLoc = modelLocation;
     // Define the vertex attributes
@@ -55,11 +55,11 @@ Node::Node(GLint modelLocation)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 }
 
-Node::~Node()
+Neuron::~Neuron()
 {
 }
 
-void Node::draw(glm::vec3 position)
+void Neuron::draw(glm::vec3 position)
 {
     // Set the model matrix
     glm::mat4 model = glm::mat4(1.0f);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "..\Node\Node.h"
+#include "..\NeurtalNetwork\Neuron\Neuron.h"
 #include <GL/glew.h>
 #include <GL/glu.h>
 #include <GLFW/glfw3.h>
@@ -33,7 +33,7 @@ private:
 	GLfloat cubePositionX;
 	GLFWwindow *window;
 
-	Node node;
+	Neuron neuron;
 
 	cl_int err;
 	cl_platform_id platform;

@@ -7,12 +7,12 @@
 #include <GL/glu.h>
 #include <GLFW/glfw3.h>
 
-class Node
+class Neuron
 {
 public:
-	Node();
-	Node(GLint modelLocation);
-	~Node();
+	Neuron();
+	Neuron(GLint modelLocation);
+	~Neuron();
 
 	void draw(glm::vec3 position);
 

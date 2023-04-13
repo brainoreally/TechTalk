@@ -19,7 +19,10 @@
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{2da66136-1ffe-48d6-8306-cf06d7606bf8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Node">
+    <Filter Include="Source Files\NeuralNetwork">
+      <UniqueIdentifier>{4c8edf96-69cc-4ba2-aede-5b887d79f6d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\NeuralNetwork\Neuron">
       <UniqueIdentifier>{db51b123-6b42-42da-8b6c-cc04b1552e6e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\NeuralNetwork">
@@ -33,8 +36,14 @@
     <ClCompile Include="src\Graphics\Graphics.cpp">
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="src\Node\Node.cpp">
-      <Filter>Source Files\Node</Filter>
+    <ClCompile Include="src\NeurtalNetwork\NeuralNetwork.cpp">
+      <Filter>Source Files\NeuralNetwork</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NeurtalNetwork\Neuron\Neuron.cpp">
+      <Filter>Source Files\NeuralNetwork\Neuron</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NeurtalNetwork\NeuralNetwork.cpp">
+      <Filter>Source Files\NeuralNetwork</Filter>
     </ClCompile>
     <ClCompile Include="src\NeurtalNetwork\NeuralNetwork.cpp">
       <Filter>Source Files\NeuralNetwork</Filter>
@@ -44,8 +53,14 @@
     <ClInclude Include="src\Graphics\Graphics.h">
       <Filter>Source Files\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="src\Node\Node.h">
-      <Filter>Source Files\Node</Filter>
+    <ClInclude Include="src\NeurtalNetwork\NeuralNetwork.h">
+      <Filter>Source Files\NeuralNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NeurtalNetwork\Neuron\Neuron.h">
+      <Filter>Source Files\NeuralNetwork\Neuron</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NeurtalNetwork\NeuralNetwork.h">
+      <Filter>Source Files\NeuralNetwork</Filter>
     </ClInclude>
     <ClInclude Include="src\NeurtalNetwork\NeuralNetwork.h">
       <Filter>Source Files\NeuralNetwork</Filter>

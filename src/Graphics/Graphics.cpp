@@ -74,7 +74,7 @@ Graphics::Graphics() {
     viewLoc = glGetUniformLocation(shaderProgram, "view");
     projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 
-    node = Node(modelLoc);
+    neuron = Neuron(modelLoc);
     initCL();
 }
 
@@ -119,9 +119,9 @@ void Graphics::draw() {
     // Copy the updated value of cubePositionX from the buffer
     err = clEnqueueReadBuffer(queue, buffer, CL_TRUE, 0, sizeof(float), &cubePositionX, 0, NULL, NULL);
 
-    node.draw(glm::vec3(cubePositionX, 0.0f, -5.0f));
-    node.draw(glm::vec3(cubePositionX, 1.5f, -5.0f));
-    node.draw(glm::vec3(cubePositionX, -1.5f,-5.0f));
+    neuron.draw(glm::vec3(cubePositionX, 0.0f, -5.0f));
+    neuron.draw(glm::vec3(cubePositionX, 1.5f, -5.0f));
+    neuron.draw(glm::vec3(cubePositionX, -1.5f,-5.0f));
 
     // Swap buffers and poll events
     glfwSwapBuffers(window);
