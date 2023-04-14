@@ -6,7 +6,7 @@ int main() {
     Graphics graphics = Graphics();
     NeuralNetwork perceptronNetwork = NeuralNetwork();
 
-    perceptronNetwork.train(50);
+    perceptronNetwork.train(5000);
 
     perceptronNetwork.predict(0.0f, 0.0f);
     perceptronNetwork.predict(1.0f, 0.0f);

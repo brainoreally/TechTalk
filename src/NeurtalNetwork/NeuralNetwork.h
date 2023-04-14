@@ -8,8 +8,7 @@
 
 #include <iostream>
 #include <sstream>
-
-#include <CL/cl.h>
+#include <fstream>
 
 class NeuralNetwork {
 public:
@@ -26,6 +25,7 @@ private:
 	Neuron outputLayer[1];
 
 	void initCL();
+	std::string loadKernelSource(const char* filename);
 
 	cl_int err;
 	cl_platform_id platform;

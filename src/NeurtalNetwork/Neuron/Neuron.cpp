@@ -1,9 +1,19 @@
 #include "Neuron.h"
 
-Neuron::Neuron() {
+Neuron::Neuron()
+{
+}
+
+Neuron::Neuron(cl_command_queue* q, cl_kernel* kern, cl_mem* outpBuffer, cl_mem* inpBuffer, cl_mem* weigBuffer) {
     weights[0] = 0.2f;
     weights[1] = 0.3f;
     weights[2] = 0.5f;
+
+    queue = q;
+    kernel = kern;
+    outputBuffer = outpBuffer;
+    inputBuffer = inpBuffer;
+    weightBuffer = weigBuffer;
 }
 
 Neuron::~Neuron()
@@ -78,8 +88,21 @@ void Neuron::draw(glm::vec3 position)
 
 GLfloat Neuron::forwardPass(GLfloat input1, GLfloat input2)
 {
-    GLfloat output = (input1 * weights[0]) + (input2 * weights[1]) + (bias * weights[2]);
-    return heavySideActivation(output);
+    // Copy the value of input1 and input2 to the buffer
+    cl_int err = clEnqueueWriteBuffer(*queue, *inputBuffer, CL_TRUE, 0, sizeof(GLfloat), &input1, 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(*queue, *inputBuffer, CL_TRUE, sizeof(GLfloat), sizeof(GLfloat), &input2, 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(*queue, *weightBuffer, CL_TRUE, 0, 3 * sizeof(GLfloat), &weights, 0, NULL, NULL);
+
+    size_t global_size[1] = { 1 };
+    size_t local_size[1] = { 1 };
+
+    // Execute the kernel
+    err = clEnqueueNDRangeKernel(*queue, *kernel, 1, NULL, global_size, local_size, 0, NULL, NULL);
+    // Copy the output from the buffer
+    GLfloat output = 0.0f;
+    err = clEnqueueReadBuffer(*queue, *outputBuffer, CL_TRUE, 0, sizeof(float), &output, 0, NULL, NULL);
+
+    return output;
 }
 
 void Neuron::learn(GLfloat input1, GLfloat input2, GLfloat output) {
@@ -91,12 +114,7 @@ void Neuron::learn(GLfloat input1, GLfloat input2, GLfloat output) {
     weights[2] += error * bias * learningRate;
 }
 
-GLfloat Neuron::heavySideActivation(GLfloat neuronOutput)
+GLfloat Neuron::sigmoidActivation(GLfloat neuronOutput)
 {
-    if (neuronOutput > 0.0f)
-        neuronOutput = 1.0f;
-    else
-        neuronOutput = 0.0f;
-
-    return neuronOutput;
+    return neuronOutput = 1.0f / (1.0f + std::exp(-neuronOutput));
 }

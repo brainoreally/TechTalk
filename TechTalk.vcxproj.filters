@@ -28,6 +28,9 @@
     <Filter Include="Source Files\NeuralNetwork">
       <UniqueIdentifier>{4c8edf96-69cc-4ba2-aede-5b887d79f6d3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Kernels">
+      <UniqueIdentifier>{292a9512-992f-4973-a711-57ecfa4d5510}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -72,6 +75,9 @@
     </None>
     <None Include="src\shaders\vertex.glsl">
       <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="src\kernels\forwardPass.cl">
+      <Filter>Source Files\Kernels</Filter>
     </None>
   </ItemGroup>
 </Project>

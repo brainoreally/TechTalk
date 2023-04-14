@@ -158,6 +158,7 @@
     <ClInclude Include="src\NeurtalNetwork\Neuron\Neuron.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="src\kernels\forwardPass.cl" />
     <None Include="src\shaders\fragment.glsl" />
     <None Include="src\shaders\vertex.glsl" />
   </ItemGroup>
