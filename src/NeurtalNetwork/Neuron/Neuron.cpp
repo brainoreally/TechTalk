@@ -115,13 +115,17 @@ GLfloat Neuron::forwardPass(GLfloat input1, GLfloat input2)
     return output;
 }
 
-void Neuron::learn(GLfloat input1, GLfloat input2, GLfloat output) {
+void Neuron::learn(GLfloat input1, GLfloat input2, GLfloat output, bool printEpoch) {
     GLfloat outputP = forwardPass(input1, input2);
 
     GLfloat error = output - outputP;
     weights[0] += error * input1 * learningRate;
     weights[1] += error * input2 * learningRate;
     weights[2] += error * bias * learningRate;
+
+    if (printEpoch) {
+        std::cout << "    Testing (" << input1 << ", " << input2 << "): { Output: " << outputP <<", Expected: " << output << ", Error: " << error << " }" << std::endl;
+    }
 }
 
 GLfloat Neuron::sigmoidActivation(GLfloat neuronOutput)

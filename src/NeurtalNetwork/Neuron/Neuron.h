@@ -12,6 +12,7 @@
 #include <cmath>
 
 #include <CL/cl.h>
+#include <iostream>
 
 class Neuron
 {
@@ -20,7 +21,7 @@ public:
 	Neuron(cl_command_queue* q, cl_kernel* kern, cl_mem* outpBuffer, cl_mem* inpBuffer, cl_mem* weigBuffer);
 	~Neuron();
 
-	void learn(GLfloat input1, GLfloat input2, GLfloat output);
+	void learn(GLfloat input1, GLfloat input2, GLfloat output, bool printEpoch);
 	void draw(glm::vec3 position);
 	void changeColour(GLfloat output);
 

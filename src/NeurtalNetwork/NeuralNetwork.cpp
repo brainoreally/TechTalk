@@ -26,12 +26,15 @@ void NeuralNetwork::draw()
     outputLayer[0].draw(glm::vec3(0.75f, 0.0f, -5.0f));
 }
 
-void NeuralNetwork::train(GLuint cycles) {
+void NeuralNetwork::train(GLuint cycles, GLuint epoch) {
     for (int i = 0; i < cycles; i++) {
-        outputLayer[0].learn(1.0f, 1.0f, 1.0f); // True  or True  = True
-        outputLayer[0].learn(1.0f, 0.0f, 1.0f); // True  or False = True
-        outputLayer[0].learn(0.0f, 1.0f, 1.0f); // False or True  = True
-        outputLayer[0].learn(0.0f, 0.0f, 0.0f); // False or False = False
+        bool printEpoch = (i % epoch) == 0;
+        if (printEpoch)
+            std::cout << "Iteration " << i << ":" << std::endl;
+        outputLayer[0].learn(1.0f, 1.0f, 1.0f, printEpoch); // True  or True  = True
+        outputLayer[0].learn(1.0f, 0.0f, 1.0f, printEpoch); // True  or False = True
+        outputLayer[0].learn(0.0f, 1.0f, 1.0f, printEpoch); // False or True  = True
+        outputLayer[0].learn(0.0f, 0.0f, 0.0f, printEpoch); // False or False = False
     }
 }
 

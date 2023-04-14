@@ -17,7 +17,7 @@ public:
 
 	void draw();
 
-	void train(GLuint cycles);
+	void train(GLuint cycles, GLuint epoch);
 	void predict(GLfloat input1, GLfloat input2);
 
 private:

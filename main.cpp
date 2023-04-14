@@ -8,7 +8,7 @@ int main() {
     Graphics graphics = Graphics();
     NeuralNetwork perceptronNetwork = NeuralNetwork();
 
-    perceptronNetwork.train(50);
+    perceptronNetwork.train(50, 10);
 
     int iter = 0;
     GLfloat combinations[4][2] = {
