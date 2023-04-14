@@ -22,11 +22,11 @@ public:
 
 	static GLuint modelUniformLocation;
 	static void setupBuffers();
+	GLfloat weights[3];
 private:
 
 	GLfloat heavySideActivation(GLfloat layerOutput);
 
 	GLfloat learningRate = 1.0f;
 	GLfloat bias = 1.0f;
-	GLfloat weights[3];
 };

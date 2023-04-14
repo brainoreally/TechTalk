@@ -15,7 +15,9 @@ int main() {
 
     // Main loop
     while (graphics.is_running()) {
-        graphics.draw(&perceptronNetwork);
+        graphics.setupScene();
+        perceptronNetwork.draw();
+        graphics.swapBuffersAndPoll();
     }
 
     // Clean up

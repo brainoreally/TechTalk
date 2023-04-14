@@ -75,17 +75,9 @@ Graphics::Graphics() {
     projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 
     Neuron::setupBuffers();
-
-    initCL();
-}
+ }
 
 Graphics::~Graphics() {
-    // Clean up
-    clReleaseMemObject(buffer);
-    clReleaseKernel(kernel);
-    clReleaseProgram(program);
-    clReleaseCommandQueue(queue);
-    clReleaseContext(context);
     // Disable vertex attribute array
     glDisableVertexAttribArray(0);
     glUseProgram(0);
@@ -93,7 +85,7 @@ Graphics::~Graphics() {
     glfwTerminate();
 }
 
-void Graphics::draw(NeuralNetwork* perceptronNetwork) {
+void Graphics::setupScene() {
 
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -108,18 +100,9 @@ void Graphics::draw(NeuralNetwork* perceptronNetwork) {
 
     // Activate the shader program
     glUseProgram(shaderProgram);
+}
 
-    size_t global_size[1] = { 1 };
-    size_t local_size[1] = { 1 };
-
-    // Execute the kernel
-    err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, global_size, local_size, 0, NULL, NULL);
-
-    // Copy the updated value of cubePositionX from the buffer
-    err = clEnqueueReadBuffer(queue, buffer, CL_TRUE, 0, sizeof(float), &cubePositionX, 0, NULL, NULL);
-
-    perceptronNetwork->draw(cubePositionX);
-
+void Graphics::swapBuffersAndPoll(){
     // Swap buffers and poll events
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -127,35 +110,6 @@ void Graphics::draw(NeuralNetwork* perceptronNetwork) {
 
 bool Graphics::is_running() {
     return !glfwWindowShouldClose(window);
-}
-
-void Graphics::initCL()
-{
-    clGetPlatformIDs(1, &platform, NULL);
-    clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL);
-    context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
-    queue = clCreateCommandQueueWithProperties(context, device, 0, &err);
-
-    // Compile and load the kernel
-    const char* kernel_source =
-        "__kernel void update_cube_position(__global float* cubePositionX)\n"
-        "{\n"
-        "    cubePositionX[0] += 0.01f;\n"
-        "    if (cubePositionX[0] >= 2.0f)\n"
-        "        cubePositionX[0] = -2.0f;\n"
-        "}\n";
-    program = clCreateProgramWithSource(context, 1, &kernel_source, NULL, &err);
-    clBuildProgram(program, 1, &device, NULL, NULL, NULL);
-    kernel = clCreateKernel(program, "update_cube_position", &err);
-
-    // Create a buffer to hold the value of cubePositionX
-    buffer = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float), NULL, &err);
-
-    // Copy the value of cubePositionX to the buffer
-    err = clEnqueueWriteBuffer(queue, buffer, CL_TRUE, 0, sizeof(float), &cubePositionX, 0, NULL, NULL);
-
-    // Set the argument of the kernel to the buffer
-    err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &buffer);
 }
 
 std::string Graphics::loadShaderSource(const char* filename)
