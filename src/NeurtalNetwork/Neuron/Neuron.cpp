@@ -21,6 +21,7 @@ Neuron::~Neuron()
 }
 
 GLuint Neuron::modelUniformLocation = 0;
+GLuint Neuron::colourUniformLocation = 0;
 
 void Neuron::setupBuffers()
 {
@@ -80,10 +81,19 @@ void Neuron::draw(glm::vec3 position)
     // Set the model matrix
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, position);
+    glUniform4fv(colourUniformLocation, 1, &colour[0]);
     glUniformMatrix4fv(modelUniformLocation, 1, GL_FALSE, glm::value_ptr(model));
 
     // Draw the cube
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
+}
+
+void Neuron::changeColour(GLfloat output)
+{
+    if (output < 0.1)
+        colour = glm::vec4({ 1.0f, 0.0f, 0.0f, 1.0f });
+    else
+        colour = glm::vec4({ 0.0f, 1.0f, 0.0f, 1.0f });
 }
 
 GLfloat Neuron::forwardPass(GLfloat input1, GLfloat input2)

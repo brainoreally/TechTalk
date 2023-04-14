@@ -37,6 +37,9 @@ void NeuralNetwork::train(GLuint cycles) {
 
 void NeuralNetwork::predict(GLfloat input1, GLfloat input2) {
     GLfloat outputP = outputLayer[0].forwardPass(input1, input2);
+    inputLayer[0].changeColour(input1);
+    inputLayer[1].changeColour(input2);
+    outputLayer[0].changeColour(outputP);
     std::cout << "Output for values (" + std::to_string(input1) + ", " + std::to_string(input2) + ") is: " + std::to_string(outputP) << std::endl;
 }
 

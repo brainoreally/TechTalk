@@ -22,13 +22,17 @@ public:
 
 	void learn(GLfloat input1, GLfloat input2, GLfloat output);
 	void draw(glm::vec3 position);
+	void changeColour(GLfloat output);
 
 	GLfloat forwardPass(GLfloat input1, GLfloat input2);
 
+	static GLuint colourUniformLocation;
 	static GLuint modelUniformLocation;
 	static void setupBuffers();
 	GLfloat weights[3];
 private:
+	glm::vec4 colour = { 0.0f, 0.0f, 0.0f, 1.0f };
+
 	GLfloat sigmoidActivation(GLfloat layerOutput);
 
 	GLfloat learningRate = 1.0f;

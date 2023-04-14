@@ -71,6 +71,7 @@ Graphics::Graphics() {
 
     // Set up the uniform locations
     Neuron::modelUniformLocation = glGetUniformLocation(shaderProgram, "model");
+    Neuron::colourUniformLocation = glGetUniformLocation(shaderProgram, "colour");
     viewLoc = glGetUniformLocation(shaderProgram, "view");
     projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 
