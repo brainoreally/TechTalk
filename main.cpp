@@ -3,7 +3,7 @@
 
 int main() {
 
-    //Graphics graphics = Graphics();
+    Graphics graphics = Graphics();
     NeuralNetwork perceptronNetwork = NeuralNetwork();
 
     perceptronNetwork.train(50);
@@ -14,9 +14,9 @@ int main() {
     perceptronNetwork.predict(1.0f, 1.0f);
 
     // Main loop
-    //while (graphics.is_running()) {
-        //graphics.draw();
-    //}
+    while (graphics.is_running()) {
+        graphics.draw(&perceptronNetwork);
+    }
 
     // Clean up
     return 0;

@@ -1,10 +1,20 @@
 #include "Neuron.h"
 
-Neuron::Neuron() {}
+Neuron::Neuron() {
+    weights[0] = 0.2f;
+    weights[1] = 0.3f;
+    weights[2] = 0.5f;
+}
 
-Neuron::Neuron(GLint modelLocation)
+Neuron::~Neuron()
 {
-    modelLoc = modelLocation;
+}
+
+GLuint Neuron::modelUniformLocation = 0;
+
+void Neuron::setupBuffers()
+{
+    GLuint VBO, EBO, VAO;
     // Define the vertex attributes
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -55,18 +65,38 @@ Neuron::Neuron(GLint modelLocation)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 }
 
-Neuron::~Neuron()
-{
-}
-
 void Neuron::draw(glm::vec3 position)
 {
     // Set the model matrix
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, position);
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(modelUniformLocation, 1, GL_FALSE, glm::value_ptr(model));
 
     // Draw the cube
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
+}
 
+GLfloat Neuron::forwardPass(GLfloat input1, GLfloat input2)
+{
+    GLfloat output = (input1 * weights[0]) + (input2 * weights[1]) + (bias * weights[2]);
+    return heavySideActivation(output);
+}
+
+void Neuron::learn(GLfloat input1, GLfloat input2, GLfloat output) {
+    GLfloat outputP = forwardPass(input1, input2);
+
+    GLfloat error = output - outputP;
+    weights[0] += error * input1 * learningRate;
+    weights[1] += error * input2 * learningRate;
+    weights[2] += error * bias * learningRate;
+}
+
+GLfloat Neuron::heavySideActivation(GLfloat neuronOutput)
+{
+    if (neuronOutput > 0.0f)
+        neuronOutput = 1.0f;
+    else
+        neuronOutput = 0.0f;
+
+    return neuronOutput;
 }

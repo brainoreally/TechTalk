@@ -1,6 +1,6 @@
 #pragma once
 
-#include "..\NeurtalNetwork\Neuron\Neuron.h"
+#include "..\NeurtalNetwork\NeuralNetwork.h"
 #include <GL/glew.h>
 #include <GL/glu.h>
 #include <GLFW/glfw3.h>
@@ -20,7 +20,7 @@ class Graphics
 public:
 	Graphics();
 	~Graphics();
-	void draw();
+	void draw(NeuralNetwork * perceptronNetwork);
 	bool is_running();
 
 private:
@@ -32,8 +32,6 @@ private:
 	GLint modelLoc, viewLoc, projectionLoc;
 	GLfloat cubePositionX;
 	GLFWwindow *window;
-
-	Neuron neuron;
 
 	cl_int err;
 	cl_platform_id platform;

@@ -70,11 +70,12 @@ Graphics::Graphics() {
     glDeleteShader(fragmentShader);
 
     // Set up the uniform locations
-    modelLoc = glGetUniformLocation(shaderProgram, "model");
+    Neuron::modelUniformLocation = glGetUniformLocation(shaderProgram, "model");
     viewLoc = glGetUniformLocation(shaderProgram, "view");
     projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 
-    neuron = Neuron(modelLoc);
+    Neuron::setupBuffers();
+
     initCL();
 }
 
@@ -92,11 +93,10 @@ Graphics::~Graphics() {
     glfwTerminate();
 }
 
-void Graphics::draw() {
+void Graphics::draw(NeuralNetwork* perceptronNetwork) {
 
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
     // Set the view matrix
     glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 1.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -109,7 +109,6 @@ void Graphics::draw() {
     // Activate the shader program
     glUseProgram(shaderProgram);
 
-
     size_t global_size[1] = { 1 };
     size_t local_size[1] = { 1 };
 
@@ -119,9 +118,7 @@ void Graphics::draw() {
     // Copy the updated value of cubePositionX from the buffer
     err = clEnqueueReadBuffer(queue, buffer, CL_TRUE, 0, sizeof(float), &cubePositionX, 0, NULL, NULL);
 
-    neuron.draw(glm::vec3(cubePositionX, 0.0f, -5.0f));
-    neuron.draw(glm::vec3(cubePositionX, 1.5f, -5.0f));
-    neuron.draw(glm::vec3(cubePositionX, -1.5f,-5.0f));
+    perceptronNetwork->draw(cubePositionX);
 
     // Swap buffers and poll events
     glfwSwapBuffers(window);
