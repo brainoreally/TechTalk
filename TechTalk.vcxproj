@@ -149,16 +149,19 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\Graphics\Graphics.cpp" />
+    <ClCompile Include="src\NeurtalNetwork\Layer\Layer.cpp" />
     <ClCompile Include="src\NeurtalNetwork\NeuralNetwork.cpp" />
     <ClCompile Include="src\NeurtalNetwork\Neuron\Neuron.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Graphics.h" />
+    <ClInclude Include="src\NeurtalNetwork\Layer\Layer.h" />
     <ClInclude Include="src\NeurtalNetwork\NeuralNetwork.h" />
     <ClInclude Include="src\NeurtalNetwork\Neuron\Neuron.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\kernels\forwardPass.cl" />
+    <None Include="src\kernels\sigmoidActivation.cl" />
     <None Include="src\shaders\fragment.glsl" />
     <None Include="src\shaders\vertex.glsl" />
   </ItemGroup>

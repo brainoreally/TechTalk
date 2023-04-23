@@ -10,38 +10,30 @@
 #include <GLFW/glfw3.h>
 
 #include <cmath>
-
-#include <CL/cl.h>
+#include <vector>
+#include <tuple>
+#include <map>
 #include <iostream>
 
-class Neuron
+#include <iostream>
+
+struct objectMeshData {
+	std::vector<std::tuple<GLfloat, GLfloat, GLfloat>> vertices;
+	std::vector<std::tuple<GLuint, GLuint, GLuint>> indices;
+};
+
+static class Neuron
 {
 public:
-	Neuron();
-	Neuron(cl_command_queue* q, cl_kernel* kern, cl_mem* outpBuffer, cl_mem* inpBuffer, cl_mem* weigBuffer);
-	~Neuron();
-
-	void learn(GLfloat input1, GLfloat input2, GLfloat output, bool printEpoch);
-	void draw(glm::vec3 position);
-	void changeColour(GLfloat output);
-
-	GLfloat forwardPass(GLfloat input1, GLfloat input2);
+	static void draw(glm::vec3 position, GLfloat value);
+	static void changeColour(GLfloat neuronValue);
 
 	static GLuint colourUniformLocation;
 	static GLuint modelUniformLocation;
 	static void setupBuffers();
-	GLfloat weights[3];
 private:
-	glm::vec4 colour = { 0.0f, 0.0f, 0.0f, 1.0f };
+	static glm::vec4 colour;
 
-	GLfloat sigmoidActivation(GLfloat layerOutput);
-
-	GLfloat learningRate = 1.0f;
-	GLfloat bias = 1.0f;
-
-	cl_command_queue* queue;
-	cl_kernel* kernel;
-	cl_mem* outputBuffer;
-	cl_mem* inputBuffer;
-	cl_mem* weightBuffer;
+	static GLuint VBO, EBO, VAO, numIndices;
+	static objectMeshData generateCubeMesh();
 };
