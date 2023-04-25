@@ -5,6 +5,7 @@ NeuralNetwork::NeuralNetwork() {
     inputLayer = Layer(2, clProgramInf);
     outputLayer = Layer(1, clProgramInf);
     Neuron::setupBuffers();
+    training = false;
  }
 
 NeuralNetwork::~NeuralNetwork()
@@ -21,26 +22,33 @@ NeuralNetwork::~NeuralNetwork()
     clReleaseContext(clProgramInf.context);
 }
 
-void learn(GLuint cyclesLeft, GLuint epoch, Neuron outputNeuron)
+void NeuralNetwork::learn()
 {
+        if (epoch < 1)
+            epoch = 1;
 
+        while (cyclesLeft > 0) {
+            bool printEpoch = (cyclesLeft % epoch) == 0;
+            if (printEpoch)
+                std::cout << "Remaining steps " << cyclesLeft << ":" << std::endl;
+
+            --cyclesLeft;
+            inputLayer.learn(1.0f, 1.0f, 1.0f, printEpoch); // True  or True  = True
+            inputLayer.learn(1.0f, 0.0f, 1.0f, printEpoch); // True  or False = True
+            inputLayer.learn(0.0f, 1.0f, 1.0f, printEpoch); // False or True  = True
+            inputLayer.learn(0.0f, 0.0f, 0.0f, printEpoch); // False or False = False
+        }
+
+        training = false;
 }
 
 void NeuralNetwork::loop()
 {
-    if (epoch < 1)
-        epoch = 1;
-          
-    while (cyclesLeft > 0) {
-        bool printEpoch = (cyclesLeft % epoch) == 0;
-        if (printEpoch)
-            std::cout << "Remaining steps " << cyclesLeft << ":" << std::endl;
+    if (!training && cyclesLeft > 0) {
+        training = true;
 
-        --cyclesLeft;
-        inputLayer.learn(1.0f, 1.0f, 1.0f, printEpoch); // True  or True  = True
-        inputLayer.learn(1.0f, 0.0f, 1.0f, printEpoch); // True  or False = True
-        inputLayer.learn(0.0f, 1.0f, 1.0f, printEpoch); // False or True  = True
-        inputLayer.learn(0.0f, 0.0f, 0.0f, printEpoch); // False or False = False
+        std::thread training_thread([&]() { learn(); });
+        training_thread.detach();
     }
 
     draw();

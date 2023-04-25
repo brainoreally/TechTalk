@@ -11,13 +11,18 @@
 #include <sstream>
 #include <fstream>
 
+#include <thread>
+
 class NeuralNetwork {
 public:
 	NeuralNetwork();
 	~NeuralNetwork();
 
+	void learn();
+
 	void loop();
 
+	bool training;
 	void train(GLuint cycles, GLuint epoch);
 	void predict(GLfloat input1, GLfloat input2);
 private:
@@ -31,4 +36,5 @@ private:
 	GLuint epoch, cyclesLeft;
 
 	CLContainer clProgramInf;
+
 };

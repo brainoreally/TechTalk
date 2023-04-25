@@ -26,7 +26,7 @@ int main() {
 
         // Check if 0.5 seconds have passed since last prediction
         auto now = std::chrono::high_resolution_clock::now();
-        if (std::chrono::duration_cast<std::chrono::milliseconds>(now - last_prediction_time).count() >= 500) {
+        if (!perceptronNetwork.training && std::chrono::duration_cast<std::chrono::milliseconds>(now - last_prediction_time).count() >= 500) {
             perceptronNetwork.predict(combinations[iter][0], combinations[iter][1]);
             iter = (iter + 1) % 4;
             last_prediction_time = now;  // update last prediction time
