@@ -13,11 +13,9 @@ OutputLayer::~OutputLayer()
 {
 }
 
-std::vector<float> OutputLayer::forwardPass(std::vector<float> inputs)
+void OutputLayer::forwardPass()
 {
-    neuronValues = inputs;
-
-    return neuronValues;
+    neuronValues = CLProgram::readBuffer("output", 0, 1);
 }
 
 std::vector<std::vector<float>> OutputLayer::returnNetworkValues()

@@ -16,10 +16,8 @@ public:
 	}
 
 	virtual std::vector<std::vector<float>> returnNetworkValues() { return { {} }; }
-	virtual std::vector<float> forwardPass(std::vector<float> inputs) { return { 0 }; }
+	virtual void forwardPass() { }
 protected:
-	virtual std::vector<float> activate() { return { 0 }; }
-
 	int numNeurons;
 	std::vector<float> weights;
 	std::vector<float> neuronValues;

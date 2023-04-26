@@ -9,6 +9,6 @@ public:
 	OutputLayer(int numNeurons);
 	~OutputLayer();
 
-	std::vector<float> forwardPass(std::vector<float> inputs);
+	void forwardPass();
 	std::vector<std::vector<float>> returnNetworkValues();
 };

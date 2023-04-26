@@ -25,17 +25,23 @@ InputLayer::~InputLayer()
 {
 }
 
-std::vector<float> InputLayer::forwardPass(std::vector<float> inputs)
+std::vector<float> InputLayer::predict(std::vector<float> inputs)
 {
     neuronValues = inputs;
-
     // Copy the value of input1 and input2 to the buffer
     CLProgram::writeBuffer("inputs", 0, neuronValues);
+    forwardPass();
+    std::vector<std::vector<float>> networkValues = returnNetworkValues();
+    return networkValues[networkValues.size() - 1];
+}
+
+void InputLayer::forwardPass()
+{
     // Queue our forward pass
     CLProgram::queueKernel("forward_pass");
+    CLProgram::queueKernel("activate");
 
-    // Return the activated value
-    return nextLayer->forwardPass(activate());
+    nextLayer->forwardPass();
 }
 
 std::vector<std::vector<float>> InputLayer::returnNetworkValues()
@@ -47,22 +53,13 @@ std::vector<std::vector<float>> InputLayer::returnNetworkValues()
     return returnValues;
 }
 
-std::vector<float> InputLayer::activate()
-{
-    CLProgram::queueKernel("activate");
+void InputLayer::learn(std::vector<float> inputs, std::vector<float> correctOutputs, bool printEpoch) {
+    std::vector<float> predictedOutput = predict(inputs);
 
-    std::vector<float> outputP = CLProgram::readBuffer("output", 0, 1);
-    
-    return outputP;
-}
-
-void InputLayer::learn(std::vector<float> inputs, std::vector<float> outputs, bool printEpoch) {
-    std::vector<float> outputP = forwardPass(inputs);
-
-    CLProgram::writeBuffer("correctOutput", 0, outputs);
+    CLProgram::writeBuffer("correctOutput", 0, correctOutputs);
     CLProgram::queueKernel("learn");
 
     if (printEpoch) {
-        std::cout << "    Testing (" << inputs[0] << ", " << inputs[1] << "): { Output: " << outputP[0] <<", Expected: " << outputs[0] << ", Error: " << outputP[0] - outputs[0] << " }" << std::endl;
+        std::cout << "    Testing (" << inputs[0] << ", " << inputs[1] << "): { Output: " << predictedOutput[0] <<", Expected: " << correctOutputs[0] << ", Error: " << predictedOutput[0] - correctOutputs[0] << " }" << std::endl;
     }
 }

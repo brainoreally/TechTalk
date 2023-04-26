@@ -24,7 +24,7 @@ public:
 
     static std::vector<float> readBuffer(const char* buffer_key, int offset, int size);
 
-    static void queueKernel(const char* kernel_key, bool wait_for_event = true);
+    static void queueKernel(const char* kernel_key, bool wait_for_event = false);
 
 private:
     static cl_int err;

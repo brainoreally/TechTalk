@@ -69,7 +69,7 @@ void NeuralNetwork::train(uint32_t cycles, uint32_t epoc) {
 }
 
 void NeuralNetwork::predict(std::vector<float> inputs) {
-    std::vector<float> outputP = inputLayer.forwardPass(inputs);
+    std::vector<float> outputP = inputLayer.predict(inputs);
     std::cout << "Output for values (" + std::to_string(inputs[0]) + ", " + std::to_string(inputs[1]) + ") is: " + std::to_string(outputP[0]) << std::endl;
 }
 
