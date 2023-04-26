@@ -22,6 +22,7 @@ public:
 
 	void loop();
 
+	bool earlyEnd;
 	bool training;
 	void train(GLuint cycles, GLuint epoch);
 	void predict(GLfloat input1, GLfloat input2);
@@ -30,11 +31,6 @@ private:
 	Layer outputLayer;
 
 	void draw();
-	void initCL();
-	std::string loadKernelSource(const char* filename);
 
 	GLuint epoch, cyclesLeft;
-
-	CLContainer clProgramInf;
-
 };

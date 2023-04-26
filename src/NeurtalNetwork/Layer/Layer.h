@@ -15,35 +15,14 @@
 #include <map>
 #include <iostream>
 
-#include <CL/cl.h>
-#include <iostream>
-
-#include <vector>
-
 #include "../Neuron/Neuron.h"
-
-struct CLContainer {
-	cl_int err;
-	cl_platform_id platform;
-	cl_device_id device;
-	cl_context context;
-	cl_command_queue queue;
-	cl_program program;
-	cl_kernel forwardPassKernel;
-	cl_kernel activateKernel;
-	cl_kernel learnKernel;
-	cl_mem outputBuffer;
-	cl_mem correctOutputBuffer;
-	cl_mem inputBuffer;
-	cl_mem weightBuffer;
-	cl_event event1, event2;
-};
+#include "../CLProgram/CLProgram.h"
 
 class Layer
 {
 public:
 	Layer();
-	Layer(int numNeurons, CLContainer clProgramInf);
+	Layer(int numNeurons);
 	~Layer();
 
 	void learn(GLfloat input1, GLfloat input2, GLfloat output, bool printEpoch);
@@ -58,8 +37,6 @@ private:
 	GLfloat activate();
 	GLfloat learningRate = 1.0f;
 	GLfloat bias = 1.0f;
-
-	static CLContainer clInf;
 
 	int numNeurons;
 };

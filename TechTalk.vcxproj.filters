@@ -34,6 +34,9 @@
     <Filter Include="Source Files\NeuralNetwork\Layer">
       <UniqueIdentifier>{48f22a43-1b6d-4ef6-b0a6-7b4f0d197aa8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\NeuralNetwork\CLProgram">
+      <UniqueIdentifier>{444072a2-9a45-41cc-8680-54b54d789f6d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -57,6 +60,9 @@
     <ClCompile Include="src\NeurtalNetwork\Layer\Layer.cpp">
       <Filter>Source Files\NeuralNetwork\Layer</Filter>
     </ClCompile>
+    <ClCompile Include="src\NeurtalNetwork\CLProgram\CLProgram.cpp">
+      <Filter>Source Files\NeuralNetwork\CLProgram</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Graphics.h">
@@ -77,6 +83,9 @@
     <ClInclude Include="src\NeurtalNetwork\Layer\Layer.h">
       <Filter>Source Files\NeuralNetwork\Layer</Filter>
     </ClInclude>
+    <ClInclude Include="src\NeurtalNetwork\CLProgram\CLProgram.h">
+      <Filter>Source Files\NeuralNetwork\CLProgram</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\fragment.glsl">
@@ -85,10 +94,7 @@
     <None Include="src\shaders\vertex.glsl">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="src\kernels\sigmoidActivation.cl">
-      <Filter>Source Files\Kernels</Filter>
-    </None>
-    <None Include="src\kernels\forwardPass.cl">
+    <None Include="src\kernels\perceptronNetwork.cl">
       <Filter>Source Files\Kernels</Filter>
     </None>
   </ItemGroup>

@@ -4,14 +4,12 @@ Layer::Layer()
 {
 }
 
-Layer::Layer(int numNeuron, CLContainer clProgramInf) {
-    Layer::clInf = clProgramInf;
-
+Layer::Layer(int numNeuron) {
     weights.push_back(0.2f);
     weights.push_back(0.3f);
     weights.push_back(0.5f);
 
-    cl_int err = clEnqueueWriteBuffer(Layer::clInf.queue, Layer::clInf.weightBuffer, CL_TRUE, 0, 3 * sizeof(GLfloat), &weights[0], 0, NULL, NULL);
+    CLProgram::writeBuffer("weights", 0, weights);
     numNeurons = numNeuron;
 
     for (int i = 0; i < numNeurons; i++) {
@@ -22,8 +20,6 @@ Layer::Layer(int numNeuron, CLContainer clProgramInf) {
 Layer::~Layer()
 {
 }
-
-CLContainer Layer::clInf = CLContainer();
 
 void Layer::draw(glm::vec3 position)
 {
@@ -43,50 +39,30 @@ GLfloat Layer::forwardPass(GLfloat input1, GLfloat input2)
 {
     nodeValues[0] = input1;
     nodeValues[1] = input2;
+
     // Copy the value of input1 and input2 to the buffer
-    cl_int err;
-    err = clEnqueueWriteBuffer(Layer::clInf.queue, Layer::clInf.inputBuffer, CL_TRUE, 0,               sizeof(GLfloat), &input1, 0, NULL, NULL);
-    err = clEnqueueWriteBuffer(Layer::clInf.queue, Layer::clInf.inputBuffer, CL_TRUE, sizeof(GLfloat), sizeof(GLfloat), &input2, 0, NULL, NULL);
+    CLProgram::writeBuffer("inputs", 0, nodeValues);
+    // Queue our forward pass
+    CLProgram::queueKernel("forward_pass");
 
-    size_t global_size[1] = { 2 };
-    size_t local_size[1] = { 1 };
-
-    // Execute the kernel
-    cl_event event;
-    err = clEnqueueNDRangeKernel(Layer::clInf.queue, Layer::clInf.forwardPassKernel, 1, NULL, global_size, local_size, 0, NULL,  &event);
-    clWaitForEvents(1, &event);
-
+    // Return the activated value
     return activate();
 }
 
 GLfloat Layer::activate()
 {
-    GLfloat outputP = 0.0f;
+    CLProgram::queueKernel("activate");
 
-    size_t global_size2[1] = { 1 };
-    size_t local_size2[1] = { 1 };
-
-    // Execute the kernel
-    cl_event event;
-    cl_int err = clEnqueueNDRangeKernel(Layer::clInf.queue, Layer::clInf.activateKernel, 1, NULL, global_size2, local_size2, 0, NULL,  &event);
-    clWaitForEvents(1, &event);
-
-    err = clEnqueueReadBuffer(Layer::clInf.queue, Layer::clInf.outputBuffer, CL_TRUE, 0, sizeof(float), &outputP, 0, NULL, NULL);
+    GLfloat outputP = CLProgram::readBuffer("output", 0, 1);
+    
     return outputP;
 }
 
 void Layer::learn(GLfloat input1, GLfloat input2, GLfloat output, bool printEpoch) {
     GLfloat outputP = forwardPass(input1, input2);
 
-    size_t global_size[1] = { 3 };
-    size_t local_size[1] = { 1 };
-
-    cl_int err = clEnqueueWriteBuffer(Layer::clInf.queue, Layer::clInf.correctOutputBuffer, CL_TRUE, 0, sizeof(GLfloat), &output, 0, NULL, NULL);
-
-    cl_event event;
-    // Execute the kernel
-    err = clEnqueueNDRangeKernel(Layer::clInf.queue, Layer::clInf.learnKernel, 1, NULL, global_size, local_size, 0, NULL, &event);
-    clWaitForEvents(1, &event);
+    CLProgram::writeBuffer("correctOutput", 0, output);
+    CLProgram::queueKernel("learn");
 
     if (printEpoch) {
         std::cout << "    Testing (" << input1 << ", " << input2 << "): { Output: " << outputP <<", Expected: " << output << ", Error: " << outputP - output << " }" << std::endl;

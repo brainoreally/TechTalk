@@ -1,6 +1,13 @@
 #include "Graphics.h"
+#include <Windows.h>
 
 Graphics::Graphics() {
+    // Get the handle to the console window
+    HWND consoleWindow = GetConsoleWindow();
+
+    // Set the position of the console window
+    SetWindowPos(consoleWindow, NULL, 0, 50, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
     // Define screen size
     resolutionX = 1800;
     resolutionY = 1200;
@@ -13,6 +20,7 @@ Graphics::Graphics() {
 
     // Create a windowed mode window and its OpenGL context
     window = glfwCreateWindow(resolutionX, resolutionY, "Blue Cube", NULL, NULL);
+    glfwSetWindowPos(window, 1200, 50);
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
