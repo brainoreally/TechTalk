@@ -22,9 +22,6 @@
     <Filter Include="Source Files\NeuralNetwork">
       <UniqueIdentifier>{4c8edf96-69cc-4ba2-aede-5b887d79f6d3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\NeuralNetwork\Neuron">
-      <UniqueIdentifier>{db51b123-6b42-42da-8b6c-cc04b1552e6e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\NeuralNetwork">
       <UniqueIdentifier>{4c8edf96-69cc-4ba2-aede-5b887d79f6d3}</UniqueIdentifier>
     </Filter>
@@ -37,6 +34,15 @@
     <Filter Include="Source Files\NeuralNetwork\CLProgram">
       <UniqueIdentifier>{444072a2-9a45-41cc-8680-54b54d789f6d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\NeuralNetwork\Layer\Input">
+      <UniqueIdentifier>{0cf338bd-fb88-4520-a8e1-145a84e67aaa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\NeuralNetwork\Layer\Output">
+      <UniqueIdentifier>{efe09f0f-5e25-4514-8b4f-6242519dc707}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics\Neuron">
+      <UniqueIdentifier>{57660958-5c4c-4489-beac-799466916c0d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -48,20 +54,23 @@
     <ClCompile Include="src\NeurtalNetwork\NeuralNetwork.cpp">
       <Filter>Source Files\NeuralNetwork</Filter>
     </ClCompile>
-    <ClCompile Include="src\NeurtalNetwork\Neuron\Neuron.cpp">
-      <Filter>Source Files\NeuralNetwork\Neuron</Filter>
-    </ClCompile>
     <ClCompile Include="src\NeurtalNetwork\NeuralNetwork.cpp">
       <Filter>Source Files\NeuralNetwork</Filter>
     </ClCompile>
     <ClCompile Include="src\NeurtalNetwork\NeuralNetwork.cpp">
       <Filter>Source Files\NeuralNetwork</Filter>
-    </ClCompile>
-    <ClCompile Include="src\NeurtalNetwork\Layer\Layer.cpp">
-      <Filter>Source Files\NeuralNetwork\Layer</Filter>
     </ClCompile>
     <ClCompile Include="src\NeurtalNetwork\CLProgram\CLProgram.cpp">
       <Filter>Source Files\NeuralNetwork\CLProgram</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NeurtalNetwork\Layer\Input\Input.cpp">
+      <Filter>Source Files\NeuralNetwork\Layer\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NeurtalNetwork\Layer\Output\Output.cpp">
+      <Filter>Source Files\NeuralNetwork\Layer\Output</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Neuron\Neuron.cpp">
+      <Filter>Source Files\Graphics\Neuron</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -70,9 +79,6 @@
     </ClInclude>
     <ClInclude Include="src\NeurtalNetwork\NeuralNetwork.h">
       <Filter>Source Files\NeuralNetwork</Filter>
-    </ClInclude>
-    <ClInclude Include="src\NeurtalNetwork\Neuron\Neuron.h">
-      <Filter>Source Files\NeuralNetwork\Neuron</Filter>
     </ClInclude>
     <ClInclude Include="src\NeurtalNetwork\NeuralNetwork.h">
       <Filter>Source Files\NeuralNetwork</Filter>
@@ -85,6 +91,15 @@
     </ClInclude>
     <ClInclude Include="src\NeurtalNetwork\CLProgram\CLProgram.h">
       <Filter>Source Files\NeuralNetwork\CLProgram</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NeurtalNetwork\Layer\Input\Input.h">
+      <Filter>Source Files\NeuralNetwork\Layer\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NeurtalNetwork\Layer\Output\Output.h">
+      <Filter>Source Files\NeuralNetwork\Layer\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Neuron\Neuron.h">
+      <Filter>Source Files\Graphics\Neuron</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

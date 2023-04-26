@@ -149,17 +149,20 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\Graphics\Graphics.cpp" />
+    <ClCompile Include="src\Graphics\Neuron\Neuron.cpp" />
     <ClCompile Include="src\NeurtalNetwork\CLProgram\CLProgram.cpp" />
-    <ClCompile Include="src\NeurtalNetwork\Layer\Layer.cpp" />
+    <ClCompile Include="src\NeurtalNetwork\Layer\Input\Input.cpp" />
+    <ClCompile Include="src\NeurtalNetwork\Layer\Output\Output.cpp" />
     <ClCompile Include="src\NeurtalNetwork\NeuralNetwork.cpp" />
-    <ClCompile Include="src\NeurtalNetwork\Neuron\Neuron.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Graphics.h" />
+    <ClInclude Include="src\Graphics\Neuron\Neuron.h" />
     <ClInclude Include="src\NeurtalNetwork\CLProgram\CLProgram.h" />
+    <ClInclude Include="src\NeurtalNetwork\Layer\Input\Input.h" />
     <ClInclude Include="src\NeurtalNetwork\Layer\Layer.h" />
+    <ClInclude Include="src\NeurtalNetwork\Layer\Output\Output.h" />
     <ClInclude Include="src\NeurtalNetwork\NeuralNetwork.h" />
-    <ClInclude Include="src\NeurtalNetwork\Neuron\Neuron.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\kernels\perceptronNetwork.cl" />

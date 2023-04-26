@@ -4,9 +4,6 @@
 #include <vector>
 #include <map>
 #include <string>
-#include <iostream>
-#include <sstream>
-#include <fstream>
 
 template<int global_size, int local_size>
 struct KernelMap {
@@ -25,7 +22,7 @@ public:
     static unsigned int writeBuffer(const char* buffer_key, unsigned int offset, std::vector<float> data);
     static unsigned int writeBuffer(const char* buffer_key, unsigned int offset, float data);
 
-    static float readBuffer(const char* buffer_key, int offset, int size);
+    static std::vector<float> readBuffer(const char* buffer_key, int offset, int size);
 
     static void queueKernel(const char* kernel_key, bool wait_for_event = true);
 

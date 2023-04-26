@@ -1,17 +1,7 @@
 #pragma once
 
-#include "Neuron/Neuron.h"
-#include "Layer/Layer.h"
-
-#include <GL/glew.h>
-#include <GL/glu.h>
-#include <GLFW/glfw3.h>
-
-#include <iostream>
-#include <sstream>
-#include <fstream>
-
-#include <thread>
+#include "Layer/Input/Input.h"
+#include "Layer/Output/Output.h"
 
 class NeuralNetwork {
 public:
@@ -24,13 +14,15 @@ public:
 
 	bool earlyEnd;
 	bool training;
-	void train(GLuint cycles, GLuint epoch);
-	void predict(GLfloat input1, GLfloat input2);
+
+	void train(uint32_t cycles, uint32_t epoch);
+	void predict(std::vector<float> inputs);
+	std::vector<std::vector<float>> returnNetworkValues();
 private:
-	Layer inputLayer;
-	Layer outputLayer;
+	InputLayer inputLayer;
+	OutputLayer outputLayer;
 
 	void draw();
 
-	GLuint epoch, cyclesLeft;
+	uint32_t epoch, cyclesLeft;
 };

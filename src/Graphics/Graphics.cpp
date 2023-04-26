@@ -121,6 +121,20 @@ bool Graphics::is_running() {
     return !glfwWindowShouldClose(window);
 }
 
+void Graphics::drawNeurons(std::vector<std::vector<GLfloat>> networkValues)
+{
+    GLfloat zPos = (networkValues.size() / 2) * -5.0f;
+    GLfloat xPos = (networkValues.size() / 2) * -0.75f;
+    for (std::vector<GLfloat> layerValues : networkValues) {
+        GLfloat yPos = (layerValues.size() / 2) * -0.75f;
+        for (GLfloat neuronValue : layerValues) {
+            Neuron::draw(glm::vec3(xPos, yPos, zPos), neuronValue);
+            yPos += 1.5f;
+        }
+        xPos += 1.5f;
+    }
+}
+
 std::string Graphics::loadShaderSource(const char* filename)
 {
     std::ifstream file(filename);

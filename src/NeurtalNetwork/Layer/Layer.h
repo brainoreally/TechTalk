@@ -1,42 +1,26 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/transform.hpp>
-
-#include <GL/glew.h>
-#include <GL/glu.h>
-#include <GLFW/glfw3.h>
-
-#include <cmath>
-#include <vector>
-#include <tuple>
-#include <map>
-#include <iostream>
-
-#include "../Neuron/Neuron.h"
 #include "../CLProgram/CLProgram.h"
 
 class Layer
 {
 public:
-	Layer();
-	Layer(int numNeurons);
-	~Layer();
+	Layer() {};
 
-	void learn(GLfloat input1, GLfloat input2, GLfloat output, bool printEpoch);
-	void draw(glm::vec3 position);
-	void setNodeValues(std::vector<GLfloat> newValues);
+	Layer(int numNeuron) {
+		numNeurons = numNeuron;
 
-	GLfloat forwardPass(GLfloat input1, GLfloat input2);
+		for (int i = 0; i < numNeurons; i++) {
+			neuronValues.push_back(0.0f);
+		}
+	}
 
-	std::vector<GLfloat> weights;
-	std::vector<GLfloat> nodeValues;
-private:
-	GLfloat activate();
-	GLfloat learningRate = 1.0f;
-	GLfloat bias = 1.0f;
+	virtual std::vector<std::vector<float>> returnNetworkValues() { return { {} }; }
+	virtual std::vector<float> forwardPass(std::vector<float> inputs) { return { 0 }; }
+protected:
+	virtual std::vector<float> activate() { return { 0 }; }
 
 	int numNeurons;
+	std::vector<float> weights;
+	std::vector<float> neuronValues;
 };

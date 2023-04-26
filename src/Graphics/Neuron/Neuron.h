@@ -15,8 +15,6 @@
 #include <map>
 #include <iostream>
 
-#include <iostream>
-
 struct objectMeshData {
 	std::vector<std::tuple<GLfloat, GLfloat, GLfloat>> vertices;
 	std::vector<std::tuple<GLuint, GLuint, GLuint>> indices;

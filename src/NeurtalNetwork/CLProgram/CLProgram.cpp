@@ -1,5 +1,9 @@
 #include "CLProgram.h"
 
+#include <iostream>
+#include <sstream>
+#include <fstream>
+
 cl_program CLProgram::program = nullptr;
 cl_int CLProgram::err = 0;
 cl_platform_id CLProgram::platform_id = nullptr;
@@ -106,10 +110,10 @@ unsigned int CLProgram::writeBuffer(const char* buffer_key, unsigned int offset,
     return newOffset;
 }
 
-float CLProgram::readBuffer(const char* buffer_key, int offset, int size)
+std::vector<float> CLProgram::readBuffer(const char* buffer_key, int offset, int size)
 {
-    float output;
-    err = clEnqueueReadBuffer(command_queue, buffers[buffer_key], CL_TRUE, offset, size * sizeof(float), &output, 0, NULL, NULL);
+    std::vector<float> output = { 0.0f };
+    err = clEnqueueReadBuffer(command_queue, buffers[buffer_key], CL_TRUE, offset, size * sizeof(float), &output[0], 0, NULL, NULL);
     return output;
 }
 
