@@ -7,9 +7,7 @@ InputLayer::InputLayer() : Layer()
 {
 }
 
-InputLayer::InputLayer(Layer* next, int numNeuron) : Layer(numNeuron) {
-    nextLayer = next;
-
+InputLayer::InputLayer(LayerParams params) : Layer(params) {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(0.0f, 1.0f);
@@ -18,7 +16,7 @@ InputLayer::InputLayer(Layer* next, int numNeuron) : Layer(numNeuron) {
         weights.push_back(dis(gen));
     }
 
-    CLProgram::writeBuffer("weights", 0, weights);
+    CLProgram::writeBuffer(bufferKeys["weights"], 0, weights);
 }
 
 InputLayer::~InputLayer()
@@ -29,7 +27,7 @@ std::vector<float> InputLayer::predict(std::vector<float> inputs)
 {
     neuronValues = inputs;
     // Copy the value of input1 and input2 to the buffer
-    CLProgram::writeBuffer("inputs", 0, neuronValues);
+    CLProgram::writeBuffer(bufferKeys["inputs"], 0, neuronValues);
     forwardPass();
     std::vector<std::vector<float>> networkValues = returnNetworkValues();
     return networkValues[networkValues.size() - 1];
@@ -38,8 +36,8 @@ std::vector<float> InputLayer::predict(std::vector<float> inputs)
 void InputLayer::forwardPass()
 {
     // Queue our forward pass
-    CLProgram::queueKernel("forward_pass");
-    CLProgram::queueKernel("activate");
+    CLProgram::queueKernel(kernelKeys["forward_pass"]);
+    CLProgram::queueKernel(kernelKeys["activate"]);
 
     nextLayer->forwardPass();
 }
@@ -56,10 +54,15 @@ std::vector<std::vector<float>> InputLayer::returnNetworkValues()
 void InputLayer::learn(std::vector<float> inputs, std::vector<float> correctOutputs, bool printEpoch) {
     std::vector<float> predictedOutput = predict(inputs);
 
-    CLProgram::writeBuffer("correctOutput", 0, correctOutputs);
-    CLProgram::queueKernel("learn");
+    CLProgram::writeBuffer(bufferKeys["correctOutput"], 0, correctOutputs);
+    CLProgram::queueKernel(kernelKeys["learn"]);
 
     if (printEpoch) {
         std::cout << "    Testing (" << inputs[0] << ", " << inputs[1] << "): { Output: " << predictedOutput[0] <<", Expected: " << correctOutputs[0] << ", Error: " << predictedOutput[0] - correctOutputs[0] << " }" << std::endl;
     }
+}
+
+void InputLayer::assignNextLayers(Layer* nextL)
+{
+    nextLayer = nextL;
 }

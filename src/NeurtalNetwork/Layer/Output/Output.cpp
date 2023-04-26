@@ -5,8 +5,7 @@ OutputLayer::OutputLayer()
 {
 }
 
-OutputLayer::OutputLayer(int numNeuron) : Layer(numNeuron) {
-
+OutputLayer::OutputLayer(LayerParams params, Layer* previousLayer) : Layer(params) {
 }
 
 OutputLayer::~OutputLayer()
@@ -15,7 +14,7 @@ OutputLayer::~OutputLayer()
 
 void OutputLayer::forwardPass()
 {
-    neuronValues = CLProgram::readBuffer("output", 0, 1);
+    neuronValues = CLProgram::readBuffer(bufferKeys["output"], 0, 1);
 }
 
 std::vector<std::vector<float>> OutputLayer::returnNetworkValues()

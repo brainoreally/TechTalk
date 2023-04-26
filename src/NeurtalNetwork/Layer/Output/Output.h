@@ -6,9 +6,11 @@ class OutputLayer : public Layer
 {
 public:
 	OutputLayer();
-	OutputLayer(int numNeurons);
+	OutputLayer(LayerParams params, Layer* previousLayer);
 	~OutputLayer();
 
-	void forwardPass();
-	std::vector<std::vector<float>> returnNetworkValues();
+	void forwardPass() override;
+	std::vector<std::vector<float>> returnNetworkValues() override;
+private:
+	Layer* previousLayer;
 };

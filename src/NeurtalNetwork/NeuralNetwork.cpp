@@ -7,12 +7,17 @@
 #include <thread>
 
 NeuralNetwork::NeuralNetwork() {
+}
+
+NeuralNetwork::NeuralNetwork(NetworkParams params) : parameters(params) {
     CLProgram::initCL();
-    outputLayer = OutputLayer(1);
-    inputLayer = InputLayer(&outputLayer, 2);
+    inputLayer = InputLayer(parameters.inputLayerParams);
+    outputLayer = OutputLayer(parameters.outputLayerParams, &inputLayer);
+    
+    inputLayer.assignNextLayers(&outputLayer);
     training = false;
     earlyEnd = false;
- }
+}
 
 NeuralNetwork::~NeuralNetwork()
 {
@@ -26,46 +31,33 @@ NeuralNetwork::~NeuralNetwork()
     CLProgram::cleanup();
 }
 
-void NeuralNetwork::learn()
+void NeuralNetwork::learn(std::vector<std::vector<std::vector<float>>> trainingData)
 {
-        if (epoch < 1)
-            epoch = 1;
+    if (epoch < 1)
+        epoch = 1;
 
-        std::vector<std::vector<std::vector<float>>> trainingData =
-        { 
-            {{1.0f, 1.0f}, {1.0f}}, // True  or True  = True
-            {{1.0f, 0.0f}, {1.0f}}, // True  or False = True
-            {{0.0f, 1.0f}, {1.0f}}, // False or True  = True
-            {{0.0f, 0.0f}, {0.0f}}, // False or False = False
-        };
-        while (cyclesLeft > 0 && !earlyEnd) {
-            bool printEpoch = (cyclesLeft % epoch) == 0;
-            if (printEpoch)
-                std::cout << "Remaining steps " << cyclesLeft << ":" << std::endl;
+    while (cyclesLeft > 0 && !earlyEnd) {
+        bool printEpoch = (cyclesLeft % epoch) == 0;
+        if (printEpoch)
+            std::cout << "Remaining steps " << cyclesLeft << ":" << std::endl;
 
-            --cyclesLeft;
-            inputLayer.learn(trainingData[0][0], trainingData[0][1], printEpoch);
-            inputLayer.learn(trainingData[1][0], trainingData[1][1], printEpoch);
-            inputLayer.learn(trainingData[2][0], trainingData[2][1], printEpoch);
-            inputLayer.learn(trainingData[3][0], trainingData[3][1], printEpoch);
-        }
-
-        training = false;
-}
-
-void NeuralNetwork::loop()
-{
-    if (!training && cyclesLeft > 0) {
-        training = true;
-
-        std::thread training_thread([&]() { learn(); });
-        training_thread.detach();
+        --cyclesLeft;
+        for(std::vector<std::vector<float>> trainingSet : trainingData)
+            inputLayer.learn(trainingSet[0], trainingSet[1], printEpoch);
     }
+
+    training = false;
 }
 
-void NeuralNetwork::train(uint32_t cycles, uint32_t epoc) {
+void NeuralNetwork::train(std::vector<std::vector<std::vector<float>>> trainingData, uint32_t cycles, uint32_t epoc) {
     cyclesLeft = cycles;
     epoch = epoc;
+
+    if (!training && cyclesLeft > 0) {
+        training = true;
+        std::thread training_thread(&NeuralNetwork::learn, this, trainingData);
+        training_thread.detach();
+    }
 }
 
 void NeuralNetwork::predict(std::vector<float> inputs) {
