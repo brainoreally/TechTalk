@@ -43,6 +43,9 @@
     <Filter Include="Source Files\Graphics\Neuron">
       <UniqueIdentifier>{57660958-5c4c-4489-beac-799466916c0d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\MNISTLoader">
+      <UniqueIdentifier>{69879138-16c4-469a-a31a-147917340eab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -100,6 +103,9 @@
     </ClInclude>
     <ClInclude Include="src\Graphics\Neuron\Neuron.h">
       <Filter>Source Files\Graphics\Neuron</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MNISTLoader\MNISTLoader.h">
+      <Filter>Source Files\MNISTLoader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

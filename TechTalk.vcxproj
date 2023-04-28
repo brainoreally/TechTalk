@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="src\Graphics\Graphics.h" />
     <ClInclude Include="src\Graphics\Neuron\Neuron.h" />
+    <ClInclude Include="src\MNISTLoader\MNISTLoader.h" />
     <ClInclude Include="src\NeurtalNetwork\CLProgram\CLProgram.h" />
     <ClInclude Include="src\NeurtalNetwork\Layer\Input\Input.h" />
     <ClInclude Include="src\NeurtalNetwork\Layer\Layer.h" />
