@@ -1,11 +1,12 @@
 #include "Output.h"
 #include <random>
 
-OutputLayer::OutputLayer()
+OutputLayer::OutputLayer() : Layer(), previousLayer(nullptr)
 {
 }
 
-OutputLayer::OutputLayer(LayerParams params, Layer* previousLayer) : Layer(params) {
+OutputLayer::OutputLayer(LayerParams params, Layer* prevLayer) : Layer(params), previousLayer(prevLayer) 
+{
 }
 
 OutputLayer::~OutputLayer()
@@ -14,7 +15,7 @@ OutputLayer::~OutputLayer()
 
 void OutputLayer::forwardPass()
 {
-    neuronValues = CLProgram::readBuffer(bufferKeys["output"], 0, 1);
+    neuronValues = CLProgram::readBuffer(bufferKeys["output"], 0, numNeurons);
 }
 
 std::vector<std::vector<float>> OutputLayer::returnNetworkValues()

@@ -10,7 +10,6 @@ NeuralNetwork::NeuralNetwork() {
 }
 
 NeuralNetwork::NeuralNetwork(NetworkParams params) : parameters(params) {
-    CLProgram::initCL();
     inputLayer = InputLayer(parameters.inputLayerParams);
     outputLayer = OutputLayer(parameters.outputLayerParams, &inputLayer);
     

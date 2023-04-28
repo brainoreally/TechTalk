@@ -11,7 +11,7 @@ cl_device_id CLProgram::device_id = nullptr;
 cl_context CLProgram::context = nullptr;
 cl_command_queue CLProgram::command_queue = nullptr;
 
-std::map<const char*, KernelMap<1, 1>> CLProgram::kernels = {};
+std::map<const char*, KernelParams> CLProgram::kernels = {};
 std::map<const char*, cl_mem> CLProgram::buffers = {};
 
 void CLProgram::cleanup()
@@ -28,14 +28,14 @@ void CLProgram::cleanup()
 	clReleaseContext(context);
 }
 
-void CLProgram::initCL()
+void CLProgram::initCL(const char* kernel_source_path)
 {
     clGetPlatformIDs(1, &platform_id, NULL);
     clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id, NULL);
     context = clCreateContext(NULL, 1, &device_id, NULL, NULL, &err);
     command_queue = clCreateCommandQueueWithProperties(context, device_id, 0, &err);
 
-    std::string kernelCode = loadKernelSource("src/kernels/perceptronNetwork.cl");
+    std::string kernelCode = loadKernelSource(kernel_source_path);
     const char* kernel_source = kernelCode.c_str();
 
     program = clCreateProgramWithSource(context, 1, &kernel_source, NULL, &err);
@@ -65,37 +65,16 @@ void CLProgram::initCL()
         // Handle the error appropriately
         // ...
     }
+ }
 
-    kernels["forward_pass"].id = clCreateKernel(program, "forward_pass", &err); 
-    kernels["forward_pass"].global_size[0] = 2;
-    kernels["forward_pass"].local_size[0] = 1;
+void CLProgram::setKernelParam(const char* kernel_key, int param_order, const char* buffer_key)
+{
+    err = clSetKernelArg(kernels[kernel_key].id, param_order, sizeof(cl_mem), &buffers[buffer_key]);
+}
 
-    kernels["activate"].id = clCreateKernel(program, "activate", &err);
-    kernels["activate"].global_size[0] = 1;
-    kernels["activate"].local_size[0] = 1;
-
-    kernels["learn"].id = clCreateKernel(program, "learn", &err);
-    kernels["learn"].global_size[0] = 3;
-    kernels["learn"].local_size[0] = 1;
-
-    // Create a buffer to hold the output
-    buffers["inputs"] = clCreateBuffer(context, CL_MEM_READ_WRITE, 2 * sizeof(float), NULL, &err);
-    buffers["weights"] = clCreateBuffer(context, CL_MEM_READ_WRITE, 3 * sizeof(float), NULL, &err);
-    buffers["output"] = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float), NULL, &err);
-    buffers["correctOutput"] = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float), NULL, &err);
-
-    // Set the argument of the kernel to the buffer
-    err = clSetKernelArg(kernels["forward_pass"].id, 0, sizeof(cl_mem), &buffers["inputs"]);
-    err = clSetKernelArg(kernels["forward_pass"].id, 1, sizeof(cl_mem), &buffers["weights"]);
-
-    err = clSetKernelArg(kernels["activate"].id, 0, sizeof(cl_mem), &buffers["inputs"]);
-    err = clSetKernelArg(kernels["activate"].id, 1, sizeof(cl_mem), &buffers["weights"]);
-    err = clSetKernelArg(kernels["activate"].id, 2, sizeof(cl_mem), &buffers["output"]);
-
-    err = clSetKernelArg(kernels["learn"].id, 0, sizeof(cl_mem), &buffers["inputs"]);
-    err = clSetKernelArg(kernels["learn"].id, 1, sizeof(cl_mem), &buffers["weights"]);
-    err = clSetKernelArg(kernels["learn"].id, 2, sizeof(cl_mem), &buffers["output"]);
-    err = clSetKernelArg(kernels["learn"].id, 3, sizeof(cl_mem), &buffers["correctOutput"]);
+void CLProgram::createBuffer(const char* buffer_key, int buffer_size)
+{
+    buffers[buffer_key] = clCreateBuffer(context, CL_MEM_READ_WRITE, buffer_size * sizeof(float), NULL, &err);
 }
 
 unsigned int CLProgram::writeBuffer(const char* buffer_key, unsigned int offset, std::vector<float> data) {
@@ -115,6 +94,13 @@ std::vector<float> CLProgram::readBuffer(const char* buffer_key, int offset, int
     std::vector<float> output = { 0.0f };
     err = clEnqueueReadBuffer(command_queue, buffers[buffer_key], CL_TRUE, offset, size * sizeof(float), &output[0], 0, NULL, NULL);
     return output;
+}
+
+void CLProgram::createKernel(const char* kernel_key, size_t* global, size_t* local)
+{
+    kernels[kernel_key].id = clCreateKernel(program, kernel_key, &err);
+    kernels[kernel_key].global_size = global;
+    kernels[kernel_key].local_size = local;
 }
 
 void CLProgram::queueKernel(const char* kernel_key, bool wait_for_event)

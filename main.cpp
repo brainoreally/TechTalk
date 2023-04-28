@@ -7,24 +7,50 @@ NetworkParams buildPerceptronParams() {
     NetworkParams out = NetworkParams(2, 1, 1, 1);
 
     std::map<const char*, const char*> inputLayerKernelKeys = {
-        { "forward_pass", "forward_pass" },
-        { "activate", "activate" },
-        { "learn", "learn" },
+        { "forward_pass", "dot_product_forward_pass" },
+        { "activate", "sigmoid_activation" },
+        { "learn", "perceptron_learn" },
     };
     std::map<const char*, const char*> inputLayerBufferKeys = {
         { "inputs", "inputs" },
         { "weights", "weights" },
         { "correctOutput", "correctOutput" },
     };
-    out.inputLayerParams = LayerParams(2, inputLayerKernelKeys, inputLayerBufferKeys);
-    out.outputLayerParams = LayerParams(2, {}, { {"output", "output"} });
+    out.inputLayerParams = LayerParams(2, 1, 1, inputLayerKernelKeys, inputLayerBufferKeys);
+    out.outputLayerParams = LayerParams(1, 1, 1, {}, { {"output", "output"} });
 
     return out;
 }
 
-int main() {
+void setupPerceptronCL() {
+    CLProgram::createKernel("dot_product_forward_pass", new size_t[1]{ 2 }, new size_t[1]{ 1 });
+    CLProgram::createKernel("sigmoid_activation", new size_t[1]{ 1 }, new size_t[1]{ 1 });
+    CLProgram::createKernel("perceptron_learn", new size_t[1]{ 3 }, new size_t[1]{ 1 });
 
+    CLProgram::createBuffer("inputs", 2);
+    CLProgram::createBuffer("weights", 3);
+    CLProgram::createBuffer("output", 1);
+    CLProgram::createBuffer("correctOutput", 1);
+
+    CLProgram::setKernelParam("dot_product_forward_pass", 0, "inputs");
+    CLProgram::setKernelParam("dot_product_forward_pass", 1, "weights");
+
+    CLProgram::setKernelParam("sigmoid_activation", 0, "inputs");
+    CLProgram::setKernelParam("sigmoid_activation", 1, "weights");
+    CLProgram::setKernelParam("sigmoid_activation", 2, "output");
+
+    CLProgram::setKernelParam("perceptron_learn", 0, "inputs");
+    CLProgram::setKernelParam("perceptron_learn", 1, "weights");
+    CLProgram::setKernelParam("perceptron_learn", 2, "output");
+    CLProgram::setKernelParam("perceptron_learn", 3, "correctOutput");
+}
+
+int main() {
     Graphics graphics = Graphics();
+
+    const char* perceptron_kernel_source_path = "src/kernels/perceptronNetwork.cl";
+    CLProgram::initCL(perceptron_kernel_source_path);
+    setupPerceptronCL();
 
     NetworkParams perceptronNetworkParams = buildPerceptronParams();
     NeuralNetwork perceptronNetwork = NeuralNetwork(perceptronNetworkParams);

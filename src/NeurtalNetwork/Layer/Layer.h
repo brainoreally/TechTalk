@@ -1,22 +1,28 @@
 #pragma once
 
 #include "../CLProgram/CLProgram.h"
+
 struct LayerParams {
-	LayerParams() {}
-	LayerParams(int numN, std::map<const char*, const char*> kernKey, std::map<const char*, const char*> buffKey) :
-		numNeurons(numN), kernelKeys(kernKey), bufferKeys(buffKey) { }
+	LayerParams() : dimX(0), dimY(0), dimZ(0), kernelKeys({}), bufferKeys({}) {}
+	LayerParams(int dataXlength, int dataYlength, int dataZlength, std::map<const char*, const char*> kernKey, std::map<const char*, const char*> buffKey) :
+		dimX(dataXlength), dimY(dataYlength), dimZ(dataZlength), kernelKeys(kernKey), bufferKeys(buffKey) { }
+
 	std::map<const char*, const char*> kernelKeys;
 	std::map<const char*, const char*> bufferKeys;
-	int numNeurons;
+	int dimX;
+	int dimY;
+	int dimZ;
+
+	int numNeurons() { return dimX * dimY * dimZ; }
 };
 
 class Layer
 {
 public:
-	Layer() {};
+	Layer() : numNeurons(0), weights({}), neuronValues({}), kernelKeys({}), bufferKeys({}) {};
 
 	Layer(LayerParams params) {
-		numNeurons = params.numNeurons;
+		numNeurons = params.numNeurons();
 		kernelKeys = params.kernelKeys;
 		bufferKeys = params.bufferKeys;
 
