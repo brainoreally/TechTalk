@@ -35,6 +35,12 @@ public:
 	virtual void forwardPass() { }
 	virtual void assignNextLayers(Layer * nextLayer) { }
 protected:
+	int numWeightedValues() {
+		//For now we want to weigh out inputs, plus our bias
+		//So return num of neurons (inputs) and add 1 space for the bias
+		//This will make sure buffer sizes are allocated correctly
+		return numNeurons + 1;
+	}
 	int numNeurons;
 	std::vector<float> weights;
 	std::vector<float> neuronValues;

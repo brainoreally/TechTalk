@@ -12,7 +12,7 @@ InputLayer::InputLayer(LayerParams params) : Layer(params), nextLayer(nullptr) {
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(0.0f, 1.0f);
 
-    for (int i = 0; i < numNeurons; i++) {
+    for (int i = 0; i < numWeightedValues(); i++) {
         weights.push_back(dis(gen));
     }
 
@@ -23,11 +23,12 @@ InputLayer::~InputLayer()
 {
 }
 
-std::vector<float> InputLayer::predict(std::vector<float> inputs)
+std::vector<float> InputLayer::predict(std::vector<float> inputs, float bias)
 {
     neuronValues = inputs;
+    inputs.push_back(bias);
     // Copy the value of input1 and input2 to the buffer
-    CLProgram::writeBuffer(bufferKeys["inputs"], 0, neuronValues);
+    CLProgram::writeBuffer(bufferKeys["layer_inputs"], 0, inputs);
     forwardPass();
     std::vector<std::vector<float>> networkValues = returnNetworkValues();
     return networkValues[networkValues.size() - 1];
@@ -51,8 +52,8 @@ std::vector<std::vector<float>> InputLayer::returnNetworkValues()
     return returnValues;
 }
 
-void InputLayer::learn(std::vector<float> inputs, std::vector<float> correctOutputs, bool printEpoch) {
-    std::vector<float> predictedOutput = predict(inputs);
+void InputLayer::learn(std::vector<float> inputs, std::vector<float> correctOutputs, bool printEpoch, float bias) {
+    std::vector<float> predictedOutput = predict(inputs, bias);
 
     CLProgram::writeBuffer(bufferKeys["correctOutput"], 0, correctOutputs);
     CLProgram::queueKernel(kernelKeys["learn"]);

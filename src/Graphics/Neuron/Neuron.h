@@ -20,7 +20,7 @@ struct objectMeshData {
 	std::vector<std::tuple<GLuint, GLuint, GLuint>> indices;
 };
 
-static class Neuron
+class Neuron
 {
 public:
 	static void draw(glm::vec3 position, GLfloat value);

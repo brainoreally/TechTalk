@@ -4,15 +4,10 @@
 #include "Layer/Output/Output.h"
 
 struct NetworkParams {
-	NetworkParams() {}
-	NetworkParams(int inDimX, int inDimY, int outDimX, int outDimY) :
-		inputDimensionsX(inDimX), inputDimensionsY(inDimY), outputDimensionsX(outDimX), outputDimensionsY(outDimY) {}
-
-	int inputDimensionsX;
-	int inputDimensionsY;
-
-	int outputDimensionsX;
-	int outputDimensionsY;
+	NetworkParams() :
+		inputLayerParams(LayerParams()), outputLayerParams(LayerParams()) {}
+	NetworkParams(LayerParams inputLayerParam, LayerParams outputLayerParam) :
+		inputLayerParams(inputLayerParam), outputLayerParams(outputLayerParam) {}
 
 	LayerParams inputLayerParams;
 	LayerParams outputLayerParams;
@@ -24,9 +19,9 @@ public:
 	NeuralNetwork(NetworkParams params);
 	~NeuralNetwork();
 
-	void learn(std::vector<std::vector<std::vector<float>>> trainingData);
+	void learn(std::pair<std::vector<std::vector<float>>, std::vector<float>>  trainingData);
 
-	void train(std::vector<std::vector<std::vector<float>>> trainingData, uint32_t cycles, uint32_t epoch);
+	void train(std::pair<std::vector<std::vector<float>>, std::vector<float>>  trainingData, uint32_t cycles, uint32_t epoch);
 	void predict(std::vector<float> inputs);
 	std::vector<std::vector<float>> returnNetworkValues();
 

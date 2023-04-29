@@ -13,8 +13,8 @@ public:
 	std::vector<std::vector<float>> returnNetworkValues() override;
 	void assignNextLayers(Layer * nextLayer) override;
 
-	std::vector<float> predict(std::vector<float> inputs);
-	void learn(std::vector<float> inputs, std::vector<float> outputs, bool printEpoch);
+	std::vector<float> predict(std::vector<float> inputs, float bias = 1.0f);
+	void learn(std::vector<float> inputs, std::vector<float> outputs, bool printEpoch, float bias = 1.0f);
 protected:
 	Layer* nextLayer;
 };
