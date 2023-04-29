@@ -33,7 +33,7 @@ public:
     static std::vector<float> readBuffer(const char* buffer_key, int offset, int size);
 
     static void createKernel(const char* kernel_key, size_t* global, size_t* local);
-    static void queueKernel(const char* kernel_key, bool wait_for_event = false);
+    static void queueKernel(const char* kernel_key);
 
 private:
     static cl_int err;

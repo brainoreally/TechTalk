@@ -103,14 +103,10 @@ void CLProgram::createKernel(const char* kernel_key, size_t* global, size_t* loc
     kernels[kernel_key].local_size = local;
 }
 
-void CLProgram::queueKernel(const char* kernel_key, bool wait_for_event)
+void CLProgram::queueKernel(const char* kernel_key)
 {
     // Execute the kernel
-    cl_event event;
-    err = clEnqueueNDRangeKernel(command_queue, kernels[kernel_key].id, 1, NULL, kernels[kernel_key].global_size, kernels[kernel_key].local_size, 0, NULL, &event);
-        
-    if(wait_for_event)
-        clWaitForEvents(1, &event);
+    err = clEnqueueNDRangeKernel(command_queue, kernels[kernel_key].id, 1, NULL, kernels[kernel_key].global_size, kernels[kernel_key].local_size, 0, NULL, NULL);
 }
 
 std::string CLProgram::loadKernelSource(const char* filename)

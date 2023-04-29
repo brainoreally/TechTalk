@@ -89,7 +89,7 @@ int main() {
 
     std::pair<std::vector<std::vector<float>>, std::vector<float>> trainingData = std::make_pair(inputs, outputs);
 
-    GLuint iterations = 1000000;
+    GLuint iterations = 5000;
     network.train(trainingData, iterations, iterations / 10);
 
     int iter = 0;
