@@ -26,7 +26,7 @@ public:
 	void forwardPass() override
 	{
 		// Queue our forward pass
-		CLProgram::queueKernel(this->kernelKeys["forward_pass"], { 3 }, { 1 });
+		CLProgram::queueKernel(this->kernelKeys["forward_pass"], { 5 }, { 1 });
 		CLProgram::queueKernel(this->kernelKeys["activate"], { 1 }, { 1 });
 
 		this->nextLayer->forwardPass();

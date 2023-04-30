@@ -43,7 +43,7 @@ public:
 	}
 protected:
 	int numWeightedValues() {
-		//For now we want to weigh out inputs, plus our bias
+		//For now we want to weigh our inputs, plus our bias
 		//So return num of neurons (inputs) and add 1 space for the bias
 		//This will make sure buffer sizes are allocated correctly
 		return this->numNeurons + 1;

@@ -3,6 +3,7 @@
 #include "../Layer.h"
 
 #include <random>
+#include <iostream>
 
 template<typename Datatype>
 class OutputLayer : public Layer<Datatype>
