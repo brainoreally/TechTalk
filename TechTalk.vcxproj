@@ -154,9 +154,6 @@
     <ClCompile Include="src\Graphics\Graphics.cpp" />
     <ClCompile Include="src\Graphics\Neuron\Neuron.cpp" />
     <ClCompile Include="src\NeurtalNetwork\CLProgram\CLProgram.cpp" />
-    <ClCompile Include="src\NeurtalNetwork\Layer\Input\Input.cpp" />
-    <ClCompile Include="src\NeurtalNetwork\Layer\Output\Output.cpp" />
-    <ClCompile Include="src\NeurtalNetwork\NeuralNetwork.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Graphics.h" />

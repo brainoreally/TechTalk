@@ -16,12 +16,13 @@ struct LayerParams {
 	int numNeurons() { return dimX * dimY * dimZ; }
 };
 
+template<typename Datatype>
 class Layer
 {
 public:
-	Layer() : numNeurons(0), weights({}), neuronValues({}), kernelKeys({}), bufferKeys({}) {};
+	Layer<Datatype>() : numNeurons(0), weights({}), neuronValues({}), kernelKeys({}), bufferKeys({}) {};
 
-	Layer(LayerParams params) {
+	Layer<Datatype>(LayerParams params) {
 		numNeurons = params.numNeurons();
 		kernelKeys = params.kernelKeys;
 		bufferKeys = params.bufferKeys;
@@ -31,19 +32,24 @@ public:
 		}
 	}
 
-	virtual std::vector<std::vector<float>> returnNetworkValues() { return { {} }; }
+	virtual std::vector<std::vector<Datatype>> returnNetworkValues() { return { {} }; }
+
 	virtual void forwardPass() { }
 	virtual void assignNextLayers(Layer * nextLayer) { }
+
+	void setNeuronValues(std::vector<Datatype> neuronVals) {
+		neuronValues = neuronVals;
+	}
 protected:
 	int numWeightedValues() {
 		//For now we want to weigh out inputs, plus our bias
 		//So return num of neurons (inputs) and add 1 space for the bias
 		//This will make sure buffer sizes are allocated correctly
-		return numNeurons + 1;
+		return this->numNeurons + 1;
 	}
 	int numNeurons;
-	std::vector<float> weights;
-	std::vector<float> neuronValues;
+	std::vector<Datatype> neuronValues;
+	std::vector<Datatype> weights;
 	std::map<const char*, const char*> kernelKeys;
 	std::map<const char*, const char*> bufferKeys;
 };

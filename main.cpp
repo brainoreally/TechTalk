@@ -71,7 +71,7 @@ int main() {
     setupPerceptronCL();
 
     NetworkParams perceptronNetworkParams = buildPerceptronParams();
-    NeuralNetwork network = NeuralNetwork(perceptronNetworkParams);
+    NeuralNetwork<float> network = NeuralNetwork<float>(perceptronNetworkParams);
 
     std::vector<std::vector<float>> inputs = {
             { 0.0f, 0.0f },
@@ -99,6 +99,7 @@ int main() {
     while (graphics.is_running()) {
         // Check if 0.5 seconds have passed since last prediction
         auto now = std::chrono::high_resolution_clock::now();
+        
         if (!network.training && std::chrono::duration_cast<std::chrono::milliseconds>(now - last_prediction_time).count() >= 500) {
             network.predict(trainingData.first[iter]);
             iter = (iter + 1) % 4;

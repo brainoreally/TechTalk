@@ -60,17 +60,8 @@
     <ClCompile Include="src\NeurtalNetwork\NeuralNetwork.cpp">
       <Filter>Source Files\NeuralNetwork</Filter>
     </ClCompile>
-    <ClCompile Include="src\NeurtalNetwork\NeuralNetwork.cpp">
-      <Filter>Source Files\NeuralNetwork</Filter>
-    </ClCompile>
     <ClCompile Include="src\NeurtalNetwork\CLProgram\CLProgram.cpp">
       <Filter>Source Files\NeuralNetwork\CLProgram</Filter>
-    </ClCompile>
-    <ClCompile Include="src\NeurtalNetwork\Layer\Input\Input.cpp">
-      <Filter>Source Files\NeuralNetwork\Layer\Input</Filter>
-    </ClCompile>
-    <ClCompile Include="src\NeurtalNetwork\Layer\Output\Output.cpp">
-      <Filter>Source Files\NeuralNetwork\Layer\Output</Filter>
     </ClCompile>
     <ClCompile Include="src\Graphics\Neuron\Neuron.cpp">
       <Filter>Source Files\Graphics\Neuron</Filter>
