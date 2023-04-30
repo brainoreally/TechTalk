@@ -46,6 +46,9 @@
     <Filter Include="Source Files\MNISTLoader">
       <UniqueIdentifier>{69879138-16c4-469a-a31a-147917340eab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\NeuralNetwork\Layer\Hidden">
+      <UniqueIdentifier>{bd43372c-ef5e-4fbb-a5d8-eaba81e08f97}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -97,6 +100,9 @@
     </ClInclude>
     <ClInclude Include="src\MNISTLoader\MNISTLoader.h">
       <Filter>Source Files\MNISTLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NeurtalNetwork\Layer\Hidden\Hidden.h">
+      <Filter>Source Files\NeuralNetwork\Layer\Hidden</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

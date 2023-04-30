@@ -22,6 +22,10 @@ public:
 		returnValues.push_back(this->neuronValues);
 		return returnValues;
 	}
+
+	void assignNextLayers(Layer<Datatype>* nextL = nullptr) override {
+		previousLayer->assignNextLayers(this);
+	}
 private:
 	Layer<Datatype>* previousLayer;
 };
