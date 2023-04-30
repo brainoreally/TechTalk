@@ -20,7 +20,8 @@ template<typename Datatype>
 class Layer
 {
 public:
-	Layer<Datatype>() : numNeurons(0), weights({}), neuronValues({}), kernelKeys({}), bufferKeys({}) {};
+	Layer<Datatype>() : 
+		numNeurons(0), weights({}), neuronValues({}), kernelKeys({}), bufferKeys({}) {};
 
 	Layer<Datatype>(LayerParams params) {
 		numNeurons = params.numNeurons();

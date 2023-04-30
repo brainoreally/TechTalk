@@ -16,11 +16,13 @@ NetworkParams buildPerceptronParams() {
         { "correct_output", "correct_output" },
     };
 
-    std::map<const char*, const char*> hiddenLayerBufferKeys1 = {
-        { "layer_inputs1", "layer_inputs1" },
-        { "layer_outputs", "layer_outputs" },
-        { "weights", "weights" },
-        { "correctOutput", "correctOutput" },
+    std::map<const char*, const char*> hiddenLayerKernelKeys = {
+        { "forward_pass", "dot_product_forward_pass" },
+        { "activate", "sigmoid_activation" },
+    };
+
+    std::map<const char*, const char*> hiddenLayerBufferKeys = {
+        { "weights", "weights1"},
     };
 
     std::map<const char*, const char*> outputLayerKernelKeys = {
@@ -40,14 +42,15 @@ NetworkParams buildPerceptronParams() {
 }
 
 void setupPerceptronCL() {
-    int numWeights = 2 + 1; // We have 2 inputs and 1 bias; so our network will want parallel jobs for this many values
-    CLProgram::createKernel("dot_product_forward_pass", new size_t[1]{ (unsigned long long)numWeights }, new size_t[1]{ 1 });
-    CLProgram::createKernel("sigmoid_activation", new size_t[1]{ 1 }, new size_t[1]{ 1 });
-    CLProgram::createKernel("perceptron_learn", new size_t[1]{ (unsigned long long)numWeights }, new size_t[1]{ 1 });
+    int maxNumWeights = 2 + 1; // We have 2 inputs and 1 bias; so our network will want parallel jobs for this many values
+    CLProgram::createKernel("dot_product_forward_pass");
+    CLProgram::createKernel("sigmoid_activation");
+    CLProgram::createKernel("perceptron_learn");
 
-    CLProgram::createBuffer("layer_inputs", numWeights);
-    CLProgram::createBuffer("layer_outputs", numWeights);
-    CLProgram::createBuffer("weights", numWeights);
+    CLProgram::createBuffer("layer_inputs", maxNumWeights);
+    CLProgram::createBuffer("layer_outputs", maxNumWeights);
+    CLProgram::createBuffer("weights", maxNumWeights);
+    CLProgram::createBuffer("weights1", maxNumWeights);
     CLProgram::createBuffer("output", 1);
     CLProgram::createBuffer("correct_output", 1);
 

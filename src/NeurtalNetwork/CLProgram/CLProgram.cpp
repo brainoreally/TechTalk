@@ -11,7 +11,7 @@ cl_device_id CLProgram::device_id = nullptr;
 cl_context CLProgram::context = nullptr;
 cl_command_queue CLProgram::command_queue = nullptr;
 
-std::map<const char*, KernelParams> CLProgram::kernels = {};
+std::map<const char*, cl_kernel> CLProgram::kernels = {};
 std::map<const char*, cl_mem> CLProgram::buffers = {};
 
 void CLProgram::cleanup()
@@ -21,7 +21,7 @@ void CLProgram::cleanup()
 		clReleaseMemObject(iter->second);
 	}
 	for (auto iter = kernels.begin(); iter != kernels.end(); ++iter) {
-		clReleaseKernel(iter->second.id);
+		clReleaseKernel(iter->second);
 	}
 	clReleaseProgram(program);
 	clReleaseCommandQueue(command_queue);
@@ -69,7 +69,7 @@ void CLProgram::initCL(const char* kernel_source_path)
 
 void CLProgram::setKernelParam(const char* kernel_key, int param_order, const char* buffer_key)
 {
-    err = clSetKernelArg(kernels[kernel_key].id, param_order, sizeof(cl_mem), &buffers[buffer_key]);
+    err = clSetKernelArg(kernels[kernel_key], param_order, sizeof(cl_mem), &buffers[buffer_key]);
 }
 
 void CLProgram::createBuffer(const char* buffer_key, int buffer_size)
@@ -96,17 +96,15 @@ std::vector<float> CLProgram::readBuffer(const char* buffer_key, int offset, int
     return output;
 }
 
-void CLProgram::createKernel(const char* kernel_key, size_t* global, size_t* local)
+void CLProgram::createKernel(const char* kernel_key)
 {
-    kernels[kernel_key].id = clCreateKernel(program, kernel_key, &err);
-    kernels[kernel_key].global_size = global;
-    kernels[kernel_key].local_size = local;
+    kernels[kernel_key] = clCreateKernel(program, kernel_key, &err);
 }
 
-void CLProgram::queueKernel(const char* kernel_key)
+void CLProgram::queueKernel(const char* kernel_key, size_t global, size_t local)
 {
     // Execute the kernel
-    err = clEnqueueNDRangeKernel(command_queue, kernels[kernel_key].id, 1, NULL, kernels[kernel_key].global_size, kernels[kernel_key].local_size, 0, NULL, NULL);
+    err = clEnqueueNDRangeKernel(command_queue, kernels[kernel_key], 1, NULL, &global, &local, 0, NULL, NULL);
 }
 
 std::string CLProgram::loadKernelSource(const char* filename)

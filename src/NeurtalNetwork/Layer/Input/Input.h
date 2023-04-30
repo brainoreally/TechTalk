@@ -44,7 +44,7 @@ public:
 		std::vector<Datatype> predictedOutput = predict(inputs, bias);
 
 		CLProgram::writeBuffer(this->bufferKeys["correct_output"], 0, correctOutputs);
-		CLProgram::queueKernel(this->kernelKeys["learn"]);
+		CLProgram::queueKernel(this->kernelKeys["learn"], { 3 }, { 1 });
 
 		if (printEpoch) {
 			std::cout << "    Testing (" << inputs[0] << ", " << inputs[1] << "): { Output: " << predictedOutput[0] << ", Expected: " << correctOutputs[0] << ", Error: " << predictedOutput[0] - correctOutputs[0] << " }" << std::endl;

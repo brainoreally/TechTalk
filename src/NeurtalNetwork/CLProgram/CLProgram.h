@@ -5,18 +5,6 @@
 #include <map>
 #include <string>
 
-struct KernelParams {
-    cl_kernel id;
-
-    size_t * global_size;
-    size_t * local_size;
-
-    ~KernelParams() {
-        delete global_size;
-        delete local_size;
-    }
-};
-
 class CLProgram {
 public:
     static void cleanup();
@@ -32,8 +20,8 @@ public:
 
     static std::vector<float> readBuffer(const char* buffer_key, int offset, int size);
 
-    static void createKernel(const char* kernel_key, size_t* global, size_t* local);
-    static void queueKernel(const char* kernel_key);
+    static void createKernel(const char* kernel_key);
+    static void queueKernel(const char* kernel_key, size_t global, size_t local);
 
 private:
     static cl_int err;
@@ -43,7 +31,7 @@ private:
     static cl_command_queue command_queue;
     static cl_program program;
 
-    static std::map<const char*, KernelParams> kernels;
+    static std::map<const char*, cl_kernel> kernels;
     static std::map<const char*, cl_mem> buffers;
 
     static std::string loadKernelSource(const char* filename);
