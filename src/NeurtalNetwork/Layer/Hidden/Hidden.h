@@ -8,8 +8,9 @@ template<typename Datatype>
 class HiddenLayer : public Layer<Datatype>
 {
 public:
-	HiddenLayer<Datatype>() : Layer<Datatype>() {}
-	HiddenLayer<Datatype>(LayerParams params, Layer<Datatype>* previousLayer) : Layer<Datatype>(params) {}
+	HiddenLayer<Datatype>() : Layer<Datatype>(), previousLayer(nullptr), nextLayer(nullptr) {}
+	HiddenLayer<Datatype>(LayerParams params, Layer<Datatype>* prevLayer) : 
+		Layer<Datatype>(params), previousLayer(prevLayer), nextLayer(nullptr) {}
 	~HiddenLayer() {
 		std::random_device rd;
 		std::mt19937 gen(rd());

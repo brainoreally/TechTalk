@@ -9,19 +9,32 @@ NetworkParams buildPerceptronParams() {
     NetworkParams out = NetworkParams();
 
     std::map<const char*, const char*> inputLayerKernelKeys = {
-        { "forward_pass", "dot_product_forward_pass" },
-        { "activate", "sigmoid_activation" },
         { "learn", "perceptron_learn" },
     };
     std::map<const char*, const char*> inputLayerBufferKeys = {
         { "layer_inputs", "layer_inputs" },
+        { "correct_output", "correct_output" },
+    };
+
+    std::map<const char*, const char*> hiddenLayerBufferKeys1 = {
+        { "layer_inputs1", "layer_inputs1" },
         { "layer_outputs", "layer_outputs" },
         { "weights", "weights" },
         { "correctOutput", "correctOutput" },
     };
 
+    std::map<const char*, const char*> outputLayerKernelKeys = {
+        { "forward_pass", "dot_product_forward_pass" },
+        { "activate", "sigmoid_activation" },
+    };
+
+    std::map<const char*, const char*> outputLayerBufferKeys = {
+        { "output", "output" },
+        { "weights", "weights" },
+    };
+
     out.inputLayerParams = LayerParams(2, 1, 1, inputLayerKernelKeys, inputLayerBufferKeys);
-    out.outputLayerParams = LayerParams(1, 1, 1, {}, { {"output", "output"} });
+    out.outputLayerParams = LayerParams(1, 1, 1, outputLayerKernelKeys, outputLayerBufferKeys);
 
     return out;
 }
@@ -36,7 +49,7 @@ void setupPerceptronCL() {
     CLProgram::createBuffer("layer_outputs", numWeights);
     CLProgram::createBuffer("weights", numWeights);
     CLProgram::createBuffer("output", 1);
-    CLProgram::createBuffer("correctOutput", 1);
+    CLProgram::createBuffer("correct_output", 1);
 
     CLProgram::setKernelParam("dot_product_forward_pass", 0, "layer_inputs");
     CLProgram::setKernelParam("dot_product_forward_pass", 1, "layer_outputs");
@@ -49,7 +62,7 @@ void setupPerceptronCL() {
     CLProgram::setKernelParam("perceptron_learn", 0, "layer_inputs");
     CLProgram::setKernelParam("perceptron_learn", 1, "weights");
     CLProgram::setKernelParam("perceptron_learn", 2, "output");
-    CLProgram::setKernelParam("perceptron_learn", 3, "correctOutput");
+    CLProgram::setKernelParam("perceptron_learn", 3, "correct_output");
 }
 
 void loadMNISTData()

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Layer/Input/Input.h"
+#include "Layer/Hidden/Hidden.h"
 #include "Layer/Output/Output.h"
 
 #include <iostream>
@@ -11,11 +12,12 @@
 
 struct NetworkParams {
 	NetworkParams() :
-		inputLayerParams(LayerParams()), outputLayerParams(LayerParams()) {}
-	NetworkParams(LayerParams inputLayerParam, LayerParams outputLayerParam) :
-		inputLayerParams(inputLayerParam), outputLayerParams(outputLayerParam) {}
+		inputLayerParams(LayerParams()), hiddenLayerParams({}), outputLayerParams(LayerParams()) {}
+	NetworkParams(LayerParams inputLayerParam, std::vector<LayerParams> hiddenLayerParam, LayerParams outputLayerParam) :
+		inputLayerParams(inputLayerParam), hiddenLayerParams(hiddenLayerParam), outputLayerParams(outputLayerParam) {}
 
 	LayerParams inputLayerParams;
+	std::vector<LayerParams> hiddenLayerParams;
 	LayerParams outputLayerParams;
 };
 
@@ -26,12 +28,14 @@ public:
 	NeuralNetwork<Datatype>(NetworkParams params) : parameters(params) {
 		inputLayer = InputLayer<Datatype>(parameters.inputLayerParams);
 		Layer<Datatype>* previousLayer = &inputLayer;
-
+		for (LayerParams hiddenLayerParameters : parameters.hiddenLayerParams) {
+			HiddenLayer<Datatype> hiddenLayer = HiddenLayer<Datatype>(hiddenLayerParameters, previousLayer);
+			previousLayer = &hiddenLayer;
+			hiddenLayers.push_back(hiddenLayer);
+		}
 		outputLayer = OutputLayer<Datatype>(parameters.outputLayerParams, previousLayer);
 
-		//Have layers pass pointers to the Layer that comes after it: done after creation as they don't exist on creation,
-		//   previous Layer pointers are handled on creation as you can pass the last created Layer in.
-		inputLayer.assignNextLayers(&outputLayer);
+		outputLayer.assignNextLayers();
 
 		training = false;
 		earlyEnd = false;
@@ -93,6 +97,7 @@ public:
 	bool training;
 private:
 	InputLayer<Datatype> inputLayer;
+	std::vector<HiddenLayer<Datatype>> hiddenLayers;
 	OutputLayer<Datatype> outputLayer;
 
 	uint32_t epoch, cyclesLeft;

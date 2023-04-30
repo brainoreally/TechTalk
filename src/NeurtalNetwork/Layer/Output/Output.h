@@ -8,12 +8,27 @@ template<typename Datatype>
 class OutputLayer : public Layer<Datatype>
 {
 public:
-	OutputLayer<Datatype>() : Layer<Datatype>() {}
-	OutputLayer<Datatype>(LayerParams params, Layer<Datatype>* previousLayer) : Layer<Datatype>(params) {}
+	OutputLayer<Datatype>() : Layer<Datatype>(), previousLayer(nullptr) {}
+	OutputLayer<Datatype>(LayerParams params, Layer<Datatype>* prevLayer) 
+		: Layer<Datatype>(params), previousLayer(prevLayer) {
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_real_distribution<Datatype> dis(0.0f, 1.0f);
+
+		for (int i = 0; i < this->numWeightedValues(); i++) {
+			this->weights.push_back(dis(gen));
+		}
+
+		CLProgram::writeBuffer(this->bufferKeys["weights"], 0, this->weights);
+	}
 	~OutputLayer() {}
 
 	void forwardPass() override
 	{
+		// Queue our forward pass
+		CLProgram::queueKernel(this->kernelKeys["forward_pass"]);
+		CLProgram::queueKernel(this->kernelKeys["activate"]);
+
 		this->setNeuronValues(CLProgram::readBuffer(this->bufferKeys["output"], 0, this->numNeurons));
 	}
 

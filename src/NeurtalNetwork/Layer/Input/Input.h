@@ -9,25 +9,12 @@ template<typename Datatype>
 class InputLayer : public Layer<Datatype>
 {
 public:
-	InputLayer<Datatype>() : Layer<Datatype>() {}
-	InputLayer<Datatype>(LayerParams params) : Layer<Datatype>(params) {
-		std::random_device rd;
-		std::mt19937 gen(rd());
-		std::uniform_real_distribution<Datatype> dis(0.0f, 1.0f);
-
-		for (int i = 0; i < this->numWeightedValues(); i++) {
-			this->weights.push_back(dis(gen));
-		}
-
-		CLProgram::writeBuffer(this->bufferKeys["weights"], 0, this->weights);
+	InputLayer<Datatype>() : Layer<Datatype>(), nextLayer(nullptr) {}
+	InputLayer<Datatype>(LayerParams params) : Layer<Datatype>(params), nextLayer(nullptr) {
 	}
 	~InputLayer() {}
 
 	void forwardPass() override {
-		// Queue our forward pass
-		CLProgram::queueKernel(this->kernelKeys["forward_pass"]);
-		CLProgram::queueKernel(this->kernelKeys["activate"]);
-
 		this->nextLayer->forwardPass();
 	}
 
@@ -56,7 +43,7 @@ public:
 	void learn(std::vector<Datatype> inputs, std::vector<Datatype> correctOutputs, bool printEpoch, Datatype bias = 1.0f) {
 		std::vector<Datatype> predictedOutput = predict(inputs, bias);
 
-		CLProgram::writeBuffer(this->bufferKeys["correctOutput"], 0, correctOutputs);
+		CLProgram::writeBuffer(this->bufferKeys["correct_output"], 0, correctOutputs);
 		CLProgram::queueKernel(this->kernelKeys["learn"]);
 
 		if (printEpoch) {
