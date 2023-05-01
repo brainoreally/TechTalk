@@ -20,13 +20,14 @@ public:
 			this->weights.push_back(dis(gen));
 		}
 
-		CLProgram::writeBuffer(this->bufferKeys["weights"], 0, this->weights);
+		CLProgram::writeBuffer<float>("weightValues", 0, this->weights);
 	}
 
 	void forwardPass() override
 	{
 		// Queue our forward pass
 		CLProgram::queueKernel(this->kernelKeys["forward_pass"], { 5 }, { 1 });
+		CLProgram::queueKernel("advance_layer", { 1 }, { 1 });
 		CLProgram::queueKernel(this->kernelKeys["activate"], { 1 }, { 1 });
 
 		this->nextLayer->forwardPass();
@@ -38,6 +39,7 @@ public:
 
 	std::vector<std::vector<Datatype>> returnNetworkValues() override {
 		std::vector<std::vector<Datatype>> returnValues;
+		this->setNeuronValues(CLProgram::readBuffer<float>("networkValues", 0, this->numNeurons));
 		returnValues.push_back(this->neuronValues);
 		std::vector<std::vector<Datatype>> nextLayerValues = this->nextLayer->returnNetworkValues();
 		returnValues.insert(returnValues.end(), nextLayerValues.begin(), nextLayerValues.end());

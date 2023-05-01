@@ -20,7 +20,7 @@ public:
 			this->weights.push_back(dis(gen));
 		}
 
-		CLProgram::writeBuffer(this->bufferKeys["weights"], 0, this->weights);
+		CLProgram::writeBuffer<float>("weightedValues", 0, this->weights);
 	}
 	~OutputLayer() {}
 
@@ -28,13 +28,14 @@ public:
 	{
 		// Queue our forward pass
 		CLProgram::queueKernel(this->kernelKeys["forward_pass"], { 3 }, { 1 });
+		CLProgram::queueKernel("advance_layer", { 1 }, { 1 });
 		CLProgram::queueKernel(this->kernelKeys["activate"], { 1 }, { 1 });
-
-		this->setNeuronValues(CLProgram::readBuffer(this->bufferKeys["output"], 0, this->numNeurons));
+		CLProgram::queueKernel("add_outputs_to_network_values", { 1 }, { 1 });
 	}
 
 	std::vector<std::vector<Datatype>> returnNetworkValues() override {
 		std::vector<std::vector<Datatype>> returnValues;
+		this->setNeuronValues(CLProgram::readBuffer<float>("networkValues", 3, this->numNeurons));
 		returnValues.push_back(this->neuronValues);
 		return returnValues;
 	}

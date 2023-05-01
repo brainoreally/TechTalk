@@ -72,30 +72,6 @@ void CLProgram::setKernelParam(const char* kernel_key, int param_order, const ch
     err = clSetKernelArg(kernels[kernel_key], param_order, sizeof(cl_mem), &buffers[buffer_key]);
 }
 
-void CLProgram::createBuffer(const char* buffer_key, int buffer_size)
-{
-    buffers[buffer_key] = clCreateBuffer(context, CL_MEM_READ_WRITE, buffer_size * sizeof(float), NULL, &err);
-}
-
-unsigned int CLProgram::writeBuffer(const char* buffer_key, unsigned int offset, std::vector<float> data) {
-    clEnqueueWriteBuffer(command_queue, buffers[buffer_key], CL_TRUE, offset, data.size() * sizeof(float), &data[0], 0, NULL, NULL);
-    unsigned int newOffset = offset + (data.size() * sizeof(float));
-    return newOffset;
-}
-
-unsigned int CLProgram::writeBuffer(const char* buffer_key, unsigned int offset, float data) {
-    clEnqueueWriteBuffer(command_queue, buffers[buffer_key], CL_TRUE, offset, sizeof(float), &data, 0, NULL, NULL);
-    unsigned int newOffset = offset + sizeof(float);
-    return newOffset;
-}
-
-std::vector<float> CLProgram::readBuffer(const char* buffer_key, int offset, int size)
-{
-    std::vector<float> output = { 0.0f };
-    err = clEnqueueReadBuffer(command_queue, buffers[buffer_key], CL_TRUE, offset, size * sizeof(float), &output[0], 0, NULL, NULL);
-    return output;
-}
-
 void CLProgram::createKernel(const char* kernel_key)
 {
     kernels[kernel_key] = clCreateKernel(program, kernel_key, &err);

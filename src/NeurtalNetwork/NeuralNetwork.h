@@ -26,6 +26,10 @@ class NeuralNetwork {
 public:
 	NeuralNetwork<Datatype>() { }
 	NeuralNetwork<Datatype>(NetworkParams params) : parameters(params) {
+
+		std::vector<unsigned int> valueOffsets = { 0, 3 };
+		CLProgram::writeBuffer<unsigned int>("valueOffsets", 0, valueOffsets);
+
 		inputLayer = InputLayer<Datatype>(parameters.inputLayerParams);
 		Layer<Datatype>* previousLayer = &inputLayer;
 		for (LayerParams hiddenLayerParameters : parameters.hiddenLayerParams) {

@@ -15,6 +15,7 @@ public:
 	~InputLayer() {}
 
 	void forwardPass() override {
+		CLProgram::queueKernel("reset_depth", { 1 }, { 1 });
 		this->nextLayer->forwardPass();
 	}
 
@@ -34,7 +35,7 @@ public:
 		this->setNeuronValues(inputs);
 		inputs.push_back(bias);
 		// Copy the value of input1 and input2 to the buffer
-		CLProgram::writeBuffer(this->bufferKeys["layer_inputs"], 0, inputs);
+		CLProgram::writeBuffer<float>("inOutValues", 0, inputs);
 		forwardPass();
 		std::vector<std::vector<Datatype>> networkValues = returnNetworkValues();
 		return networkValues[networkValues.size() - 1];
@@ -43,7 +44,8 @@ public:
 	void learn(std::vector<Datatype> inputs, std::vector<Datatype> correctOutputs, bool printEpoch, Datatype bias = 1.0f) {
 		std::vector<Datatype> predictedOutput = predict(inputs, bias);
 
-		CLProgram::writeBuffer(this->bufferKeys["correct_output"], 0, correctOutputs);
+		CLProgram::queueKernel("reset_depth", { 1 }, { 1 });
+		CLProgram::writeBuffer<float>("correctOutput", 0, correctOutputs);
 		CLProgram::queueKernel(this->kernelKeys["learn"], { 3 }, { 1 });
 
 		if (printEpoch) {

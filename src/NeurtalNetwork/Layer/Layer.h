@@ -3,12 +3,11 @@
 #include "../CLProgram/CLProgram.h"
 
 struct LayerParams {
-	LayerParams() : dimX(0), dimY(0), dimZ(0), kernelKeys({}), bufferKeys({}) {}
-	LayerParams(int dataXlength, int dataYlength, int dataZlength, std::map<const char*, const char*> kernKey, std::map<const char*, const char*> buffKey) :
-		dimX(dataXlength), dimY(dataYlength), dimZ(dataZlength), kernelKeys(kernKey), bufferKeys(buffKey) { }
+	LayerParams() : dimX(0), dimY(0), dimZ(0), kernelKeys({}) {}
+	LayerParams(int dataXlength, int dataYlength, int dataZlength, std::map<const char*, const char*> kernKey) :
+		dimX(dataXlength), dimY(dataYlength), dimZ(dataZlength), kernelKeys(kernKey) { }
 
 	std::map<const char*, const char*> kernelKeys;
-	std::map<const char*, const char*> bufferKeys;
 	int dimX;
 	int dimY;
 	int dimZ;
@@ -21,12 +20,11 @@ class Layer
 {
 public:
 	Layer<Datatype>() : 
-		numNeurons(0), weights({}), neuronValues({}), kernelKeys({}), bufferKeys({}) {};
+		numNeurons(0), weights({}), neuronValues({}), kernelKeys({}) {};
 
 	Layer<Datatype>(LayerParams params) {
 		numNeurons = params.numNeurons();
 		kernelKeys = params.kernelKeys;
-		bufferKeys = params.bufferKeys;
 
 		for (int i = 0; i < numNeurons; i++) {
 			neuronValues.push_back(0.0f);
@@ -52,5 +50,4 @@ protected:
 	std::vector<Datatype> neuronValues;
 	std::vector<Datatype> weights;
 	std::map<const char*, const char*> kernelKeys;
-	std::map<const char*, const char*> bufferKeys;
 };
