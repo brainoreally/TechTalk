@@ -67,4 +67,5 @@ __kernel void add_outputs_to_network_values(
 {
     const int gid = get_global_id(0);
     networkValues[valueOffsets[layerDepth[0]] + gid] = outputValues[gid];
+    //printf("networkValues: {%f, %f, %f, %f}\n", networkValues[0], networkValues[1], networkValues[2], networkValues[3]);
 }

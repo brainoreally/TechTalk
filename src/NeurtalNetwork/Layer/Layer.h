@@ -20,11 +20,14 @@ class Layer
 {
 public:
 	Layer<Datatype>() : 
-		numNeurons(0), weights({}), neuronValues({}), kernelKeys({}) {};
+		numNeurons(0), weights({}), neuronValues({}), kernelKeys({}), previousLayer(nullptr) {};
 
 	Layer<Datatype>(LayerParams params) {
 		numNeurons = params.numNeurons();
 		kernelKeys = params.kernelKeys;
+
+		numNeuronGlobal = numNeurons;
+		numWeightedValGlobal = numWeightedValues();
 
 		for (int i = 0; i < numNeurons; i++) {
 			neuronValues.push_back(0.0f);
@@ -36,10 +39,29 @@ public:
 	virtual void forwardPass() { }
 	virtual void assignNextLayers(Layer * nextLayer) { }
 
+	virtual unsigned int getOffset() {
+		int offset = numWeightedValues();
+		offset += previousLayer->getOffset();
+		return offset;
+	}
+
 	void setNeuronValues(std::vector<Datatype> neuronVals) {
 		neuronValues = neuronVals;
 	}
+
+	unsigned int getNetworkValueOffset() {
+		return previousLayer->getOffset();
+	}
+
+	virtual void learn() {
+		CLProgram::queueKernel(kernelKeys["learn"], numWeightedValGlobal, { 1 });
+		nextLayer->learn();
+	}
+
 protected:
+	Layer<Datatype>* previousLayer;
+	Layer<Datatype>* nextLayer;
+
 	int numWeightedValues() {
 		//For now we want to weigh our inputs, plus our bias
 		//So return num of neurons (inputs) and add 1 space for the bias
@@ -50,4 +72,7 @@ protected:
 	std::vector<Datatype> neuronValues;
 	std::vector<Datatype> weights;
 	std::map<const char*, const char*> kernelKeys;
+
+	size_t numNeuronGlobal;
+	size_t numWeightedValGlobal;
 };

@@ -9,11 +9,11 @@ NetworkParams buildPerceptronParams() {
     NetworkParams out = NetworkParams();
 
     std::map<const char*, const char*> inputLayerKernelKeys = {
+        { "forward_pass", "dot_product_forward_pass" },
         { "learn", "perceptron_learn" },
     };
 
     std::map<const char*, const char*> outputLayerKernelKeys = {
-        { "forward_pass", "dot_product_forward_pass" },
         { "activate", "sigmoid_activation" },
     };
 

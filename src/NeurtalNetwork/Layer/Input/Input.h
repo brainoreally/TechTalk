@@ -9,13 +9,14 @@ template<typename Datatype>
 class InputLayer : public Layer<Datatype>
 {
 public:
-	InputLayer<Datatype>() : Layer<Datatype>(), nextLayer(nullptr) {}
-	InputLayer<Datatype>(LayerParams params) : Layer<Datatype>(params), nextLayer(nullptr) {
+	InputLayer<Datatype>() : Layer<Datatype>() {}
+	InputLayer<Datatype>(LayerParams params) : Layer<Datatype>(params) {
 	}
 	~InputLayer() {}
 
 	void forwardPass() override {
 		CLProgram::queueKernel("reset_depth", { 1 }, { 1 });
+		CLProgram::queueKernel(this->kernelKeys["forward_pass"], this->numWeightedValGlobal, { 1 });
 		this->nextLayer->forwardPass();
 	}
 
@@ -28,7 +29,7 @@ public:
 	}
 
 	void assignNextLayers(Layer<Datatype>* nextL) override {
-		nextLayer = nextL;
+		this->nextLayer = nextL;
 	}
 
 	std::vector<Datatype> predict(std::vector<Datatype> inputs, Datatype bias = 1.0f) {
@@ -46,12 +47,16 @@ public:
 
 		CLProgram::queueKernel("reset_depth", { 1 }, { 1 });
 		CLProgram::writeBuffer<float>("correctOutput", 0, correctOutputs);
-		CLProgram::queueKernel(this->kernelKeys["learn"], { 3 }, { 1 });
+
+		CLProgram::queueKernel(this->kernelKeys["learn"], this->numWeightedValGlobal, { 1 });
+		this->nextLayer->learn();
 
 		if (printEpoch) {
 			std::cout << "    Testing (" << inputs[0] << ", " << inputs[1] << "): { Output: " << predictedOutput[0] << ", Expected: " << correctOutputs[0] << ", Error: " << predictedOutput[0] - correctOutputs[0] << " }" << std::endl;
 		}
 	}
-protected:
-	Layer<Datatype>* nextLayer;
+
+	unsigned int getOffset() override {
+		return this->numWeightedValues();
+	}
 };
