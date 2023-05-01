@@ -123,10 +123,10 @@ bool Graphics::is_running() {
 
 void Graphics::drawNeurons(std::vector<std::vector<GLfloat>> networkValues)
 {
-    GLfloat zPos = (networkValues.size() / 2) * -5.0f;
-    GLfloat xPos = (networkValues.size() / 2) * -0.75f;
+    GLfloat zPos = networkValues.size() * -2.0f;
+    GLfloat xPos = networkValues.size() * -0.75f;
     for (std::vector<GLfloat> layerValues : networkValues) {
-        GLfloat yPos = (layerValues.size() / 2) * -0.75f;
+        GLfloat yPos = layerValues.size() * -0.75f;
         for (GLfloat neuronValue : layerValues) {
             Neuron::draw(glm::vec3(xPos, yPos, zPos), neuronValue);
             yPos += 1.5f;

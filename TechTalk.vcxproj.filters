@@ -57,12 +57,6 @@
     <ClCompile Include="src\Graphics\Graphics.cpp">
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="src\NeurtalNetwork\NeuralNetwork.cpp">
-      <Filter>Source Files\NeuralNetwork</Filter>
-    </ClCompile>
-    <ClCompile Include="src\NeurtalNetwork\NeuralNetwork.cpp">
-      <Filter>Source Files\NeuralNetwork</Filter>
-    </ClCompile>
     <ClCompile Include="src\NeurtalNetwork\CLProgram\CLProgram.cpp">
       <Filter>Source Files\NeuralNetwork\CLProgram</Filter>
     </ClCompile>
@@ -104,16 +98,19 @@
     <ClInclude Include="src\NeurtalNetwork\Layer\Hidden\Hidden.h">
       <Filter>Source Files\NeuralNetwork\Layer\Hidden</Filter>
     </ClInclude>
+    <ClInclude Include="src\NeurtalNetwork\ParamStructs.h">
+      <Filter>Source Files\NeuralNetwork</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\fragment.glsl">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="src\shaders\vertex.glsl">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
     <None Include="src\kernels\perceptronNetwork.cl">
       <Filter>Source Files\Kernels</Filter>
+    </None>
+    <None Include="src\shaders\vertex.glsl">
+      <Filter>Source Files\Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -165,6 +165,7 @@
     <ClInclude Include="src\NeurtalNetwork\Layer\Layer.h" />
     <ClInclude Include="src\NeurtalNetwork\Layer\Output\Output.h" />
     <ClInclude Include="src\NeurtalNetwork\NeuralNetwork.h" />
+    <ClInclude Include="src\NeurtalNetwork\ParamStructs.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\kernels\perceptronNetwork.cl" />

@@ -2,32 +2,20 @@
 
 #include "../CLProgram/CLProgram.h"
 
-struct LayerParams {
-	LayerParams() : dimX(0), dimY(0), dimZ(0), kernelKeys({}) {}
-	LayerParams(int dataXlength, int dataYlength, int dataZlength, std::map<const char*, const char*> kernKey) :
-		dimX(dataXlength), dimY(dataYlength), dimZ(dataZlength), kernelKeys(kernKey) { }
-
-	std::map<const char*, const char*> kernelKeys;
-	int dimX;
-	int dimY;
-	int dimZ;
-
-	int numNeurons() { return dimX * dimY * dimZ; }
-};
+#include <random>
 
 template<typename Datatype>
 class Layer
 {
 public:
 	Layer<Datatype>() : 
-		numNeurons(0), weights({}), neuronValues({}), kernelKeys({}), previousLayer(nullptr) {};
+		numNeurons(0), weights({}), neuronValues({}), kernelKeys({}) {};
 
 	Layer<Datatype>(LayerParams params) {
 		numNeurons = params.numNeurons();
 		kernelKeys = params.kernelKeys;
 
 		numNeuronGlobal = numNeurons;
-		numWeightedValGlobal = numWeightedValues();
 
 		for (int i = 0; i < numNeurons; i++) {
 			neuronValues.push_back(0.0f);
@@ -37,11 +25,16 @@ public:
 	virtual std::vector<std::vector<Datatype>> returnNetworkValues() { return { {} }; }
 
 	virtual void forwardPass() { }
-	virtual void assignNextLayers(Layer * nextLayer) { }
 
-	virtual unsigned int getOffset() {
+	virtual unsigned int getNeuronValueOffset() {
+		int offset = numNeuronValues();
+		offset += previousLayer->getNeuronValueOffset();
+		return offset;
+	}
+
+	virtual unsigned int getWeightedValueOffset() {
 		int offset = numWeightedValues();
-		offset += previousLayer->getOffset();
+		offset += previousLayer->getWeightedValueOffset();
 		return offset;
 	}
 
@@ -49,25 +42,55 @@ public:
 		neuronValues = neuronVals;
 	}
 
-	unsigned int getNetworkValueOffset() {
-		return previousLayer->getOffset();
+	Layer<Datatype>* getNextLayer() {
+		return nextLayer;
 	}
 
-	virtual void learn() {
-		CLProgram::queueKernel(kernelKeys["learn"], numWeightedValGlobal, { 1 });
-		nextLayer->learn();
+
+	void assignNextLayer(Layer<Datatype>* nextL = nullptr) {
+		nextLayer = nextL;
+	}
+
+	void assignPreviousLayer(Layer<Datatype>* prevL) {
+		previousLayer = prevL;
+	}
+	
+	virtual void train() { }
+
+	virtual void learn() { }
+
+	virtual void finishLayerSetup() {
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_real_distribution<Datatype> dis(0.0f, 1.0f);
+
+		for (int i = 0; i < numWeightedValues(); i++) {
+			weights.push_back(dis(gen));
+		}
+
+		CLProgram::writeBuffer<Datatype>("weightedValues", previousLayer->getWeightedValueOffset(), weights);
+		numWeightedValGlobal = numWeightedValues();
+		previousLayer->finishLayerSetup();
 	}
 
 protected:
 	Layer<Datatype>* previousLayer;
 	Layer<Datatype>* nextLayer;
 
-	int numWeightedValues() {
-		//For now we want to weigh our inputs, plus our bias
+	int numNeuronValues() {
+		//Our given neuron count plus our bias
 		//So return num of neurons (inputs) and add 1 space for the bias
 		//This will make sure buffer sizes are allocated correctly
-		return this->numNeurons + 1;
+		return numNeurons + 1;
 	}
+
+	virtual int numWeightedValues() {
+		//Our given neuron count plus our bias
+		//So return num of neurons (inputs) and add 1 space for the bias
+		//This will make sure buffer sizes are allocated correctly
+		return numNeuronValues() * previousLayer->numNeuronValues();
+	}
+
 	int numNeurons;
 	std::vector<Datatype> neuronValues;
 	std::vector<Datatype> weights;

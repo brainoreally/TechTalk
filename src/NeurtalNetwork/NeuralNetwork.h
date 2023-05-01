@@ -10,36 +10,48 @@
 
 #include <thread>
 
-struct NetworkParams {
-	NetworkParams() :
-		inputLayerParams(LayerParams()), hiddenLayerParams({}), outputLayerParams(LayerParams()) {}
-	NetworkParams(LayerParams inputLayerParam, std::vector<LayerParams> hiddenLayerParam, LayerParams outputLayerParam) :
-		inputLayerParams(inputLayerParam), hiddenLayerParams(hiddenLayerParam), outputLayerParams(outputLayerParam) {}
-
-	LayerParams inputLayerParams;
-	std::vector<LayerParams> hiddenLayerParams;
-	LayerParams outputLayerParams;
-};
-
 template<typename Datatype>
 class NeuralNetwork {
 public:
 	NeuralNetwork<Datatype>() { }
 	NeuralNetwork<Datatype>(NetworkParams params) : parameters(params) {
-
-		std::vector<unsigned int> valueOffsets = { 0, 3 };
-		CLProgram::writeBuffer<unsigned int>("valueOffsets", 0, valueOffsets);
+		CLProgram::initCL(parameters.kernel_source_path);
+		CLProgram::setupNetworkOpenCL(&parameters);
+		CLProgram::writeBuffer<unsigned int>("valueOffsets", 0, parameters.valueOffsets);
+		CLProgram::writeBuffer<unsigned int>("layerInputSize", 0, parameters.layerInputSize);
 
 		inputLayer = InputLayer<Datatype>(parameters.inputLayerParams);
-		Layer<Datatype>* previousLayer = &inputLayer;
-		for (LayerParams hiddenLayerParameters : parameters.hiddenLayerParams) {
-			HiddenLayer<Datatype> hiddenLayer = HiddenLayer<Datatype>(hiddenLayerParameters, previousLayer);
-			previousLayer = &hiddenLayer;
-			hiddenLayers.push_back(hiddenLayer);
-		}
-		outputLayer = OutputLayer<Datatype>(parameters.outputLayerParams, previousLayer);
 
-		outputLayer.assignNextLayers();
+		int valueOffset = 3;
+
+		for (LayerParams hiddenLayerParameters : parameters.hiddenLayerParams) {
+			hiddenLayers.push_back(HiddenLayer<Datatype>(hiddenLayerParameters, valueOffset));
+			valueOffset += 5;
+		}
+		outputLayer = OutputLayer<Datatype>(parameters.outputLayerParams);
+
+		if (hiddenLayers.size() > 0) {
+			inputLayer.assignNextLayer(&hiddenLayers[0]);
+			int lastHiddenIndex = hiddenLayers.size() - 1;
+
+			for(int i = 0; i < lastHiddenIndex; i++)
+				hiddenLayers[i].assignNextLayer(&hiddenLayers[i + 1]);
+
+			hiddenLayers[lastHiddenIndex].assignNextLayer(&outputLayer);
+
+			outputLayer.assignPreviousLayer(&hiddenLayers[lastHiddenIndex]);
+
+			for(int i = lastHiddenIndex; i > 0; i--)
+				hiddenLayers[i].assignPreviousLayer(&hiddenLayers[i-1]);
+
+			hiddenLayers[0].assignPreviousLayer(&inputLayer);
+		}
+		else {
+			inputLayer.assignNextLayer(&outputLayer);
+			outputLayer.assignPreviousLayer(&inputLayer);
+		}
+
+		outputLayer.finishLayerSetup();
 
 		training = false;
 		earlyEnd = false;
@@ -70,10 +82,18 @@ public:
 				std::cout << "Remaining steps " << cyclesLeft << ":" << std::endl;
 
 			--cyclesLeft;
-			for (int i = 0; i < trainingData.first.size(); i++)
-				inputLayer.learn(trainingData.first[i], { trainingData.second[i] }, printEpoch);
-		}
 
+			for (int i = 0; i < trainingData.first.size(); i++) {
+				int test = 0;
+				int otherTest = 0;
+				inputLayer.predict(trainingData.first[i], false);
+				CLProgram::writeBuffer<float>("correctOutput", 0, { trainingData.second[i] });
+				outputLayer.train();
+				if (printEpoch) {
+					std::cout << "    Testing (" << trainingData.first[i][0] << ", " << trainingData.first[i][1] << "): { Output: " << outputLayer.returnNetworkValues()[0][0] << ", Expected: " << trainingData.second[i] << " }" << std::endl;
+				}
+			}
+		}
 		// If we fail to set this the cleanup code for this class can hang.
 		training = false;
 	}
@@ -84,7 +104,7 @@ public:
 
 		if (!training && cyclesLeft > 0) {
 			training = true;
-			std::thread training_thread(&NeuralNetwork::learn, this, trainingData);
+			std::thread training_thread(&NeuralNetwork<Datatype>::learn, this, trainingData);
 			training_thread.detach();
 		}
 	}

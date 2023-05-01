@@ -3,7 +3,6 @@
 #include "../Layer.h"
 
 #include <iostream>
-#include <random>
 
 template<typename Datatype>
 class InputLayer : public Layer<Datatype>
@@ -16,7 +15,7 @@ public:
 
 	void forwardPass() override {
 		CLProgram::queueKernel("reset_depth", { 1 }, { 1 });
-		CLProgram::queueKernel(this->kernelKeys["forward_pass"], this->numWeightedValGlobal, { 1 });
+		CLProgram::queueKernel(this->kernelKeys["forward_pass"], this->numWeightedValGlobal, this->numWeightedValGlobal);
 		this->nextLayer->forwardPass();
 	}
 
@@ -27,19 +26,33 @@ public:
 		returnValues.insert(returnValues.end(), nextLayerValues.begin(), nextLayerValues.end());
 		return returnValues;
 	}
-
-	void assignNextLayers(Layer<Datatype>* nextL) override {
-		this->nextLayer = nextL;
-	}
-
-	std::vector<Datatype> predict(std::vector<Datatype> inputs, Datatype bias = 1.0f) {
+	
+	std::vector<Datatype> predict(std::vector<Datatype> inputs, bool skipPredict = false, Datatype bias = 1.0f) {
 		this->setNeuronValues(inputs);
 		inputs.push_back(bias);
 		// Copy the value of input1 and input2 to the buffer
 		CLProgram::writeBuffer<float>("inOutValues", 0, inputs);
-		forwardPass();
-		std::vector<std::vector<Datatype>> networkValues = returnNetworkValues();
-		return networkValues[networkValues.size() - 1];
+		this->forwardPass();
+
+		std::vector<Datatype> ret = {};
+		if (!skipPredict) {
+			std::vector<std::vector<Datatype>> networkValues = returnNetworkValues();
+			ret = networkValues[networkValues.size() - 1];
+		}
+		return ret;
+	}
+
+	void train() override
+	{
+		CLProgram::queueKernel("decrease_layer", { 1 }, { 1 });
+		CLProgram::queueKernel(this->kernelKeys["train"], this->numWeightedValGlobal, this->numWeightedValGlobal);
+		this->learn();
+	}
+
+	void learn() override {
+		CLProgram::queueKernel("set_layer_error", this->numWeightedValGlobal, this->numWeightedValGlobal);
+		CLProgram::queueKernel(this->kernelKeys["learn"], this->numWeightedValGlobal, this->numWeightedValGlobal);
+		this->nextLayer->learn();
 	}
 
 	void learn(std::vector<Datatype> inputs, std::vector<Datatype> correctOutputs, bool printEpoch, Datatype bias = 1.0f) {
@@ -48,7 +61,7 @@ public:
 		CLProgram::queueKernel("reset_depth", { 1 }, { 1 });
 		CLProgram::writeBuffer<float>("correctOutput", 0, correctOutputs);
 
-		CLProgram::queueKernel(this->kernelKeys["learn"], this->numWeightedValGlobal, { 1 });
+		CLProgram::queueKernel(this->kernelKeys["learn"], this->numWeightedValGlobal, this->numWeightedValGlobal);
 		this->nextLayer->learn();
 
 		if (printEpoch) {
@@ -56,7 +69,31 @@ public:
 		}
 	}
 
-	unsigned int getOffset() override {
-		return this->numWeightedValues();
+	unsigned int getNeuronValueOffset() override {
+		return this->numNeuronValues();
+	}
+
+	unsigned int getWeightedValueOffset() override {
+		return this->numNeuronValues();
+	}
+
+	int numWeightedValues() override {
+		//Our given neuron count plus our bias
+		//So return num of neurons (inputs) and add 1 space for the bias
+		//This will make sure buffer sizes are allocated correctly
+		return this->numNeuronValues();
+	}
+
+	void finishLayerSetup() override {
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_real_distribution<Datatype> dis(0.0f, 1.0f);
+
+		for (int i = 0; i < this->numWeightedValues(); i++) {
+			this->weights.push_back(dis(gen));
+		}
+
+		CLProgram::writeBuffer<Datatype>("weightedValues", 0, this->weights);
+		this->numWeightedValGlobal = this->numWeightedValues();
 	}
 };

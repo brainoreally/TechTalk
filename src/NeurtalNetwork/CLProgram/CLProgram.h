@@ -1,9 +1,9 @@
 #pragma once
 
 #include <CL/cl.h>
-#include <vector>
-#include <map>
 #include <string>
+
+#include "../ParamStructs.h"
 
 class CLProgram {
 public:
@@ -13,6 +13,7 @@ public:
     static void createKernel(const char* kernel_key);
     static void setKernelParam(const char* kernel_key, int param_order, const char* buffer_key);
     static void queueKernel(const char* kernel_key, size_t global, size_t local);
+    static void setupNetworkOpenCL(NetworkParams* params);
 
     template<typename Datatype>
     static void createBuffer(const char* buffer_key, int buffer_size) {
@@ -36,7 +37,9 @@ public:
     template<typename Datatype>
     static std::vector<Datatype> readBuffer(const char* buffer_key, int offset, int size)
     {
-        std::vector<Datatype> output = { 0.0f };
+        std::vector<Datatype> output;
+        for(int i = 0; i < size; i++)
+            output.push_back(0.0f);
         err = clEnqueueReadBuffer(command_queue, buffers[buffer_key], CL_TRUE, offset * sizeof(Datatype), size * sizeof(Datatype), &output[0], 0, NULL, NULL);
         return output;
     }
