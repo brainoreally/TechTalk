@@ -168,7 +168,7 @@
     <ClInclude Include="src\NeurtalNetwork\ParamStructs.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\kernels\perceptronNetwork.cl" />
+    <None Include="src\kernels\perceptron.cl" />
     <None Include="src\shaders\fragment.glsl" />
     <None Include="src\shaders\vertex.glsl" />
   </ItemGroup>

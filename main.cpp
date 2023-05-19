@@ -8,80 +8,40 @@
 NetworkParams buildPerceptronParams() {
     NetworkParams out = NetworkParams();
 
-    out.kernel_source_path = "src/kernels/perceptronNetwork.cl";
+    out.kernel_source_path = "src/kernels/perceptron.cl";
+    std::vector<std::vector<int>> hiddenLayerParams = { { 4, 0 }, { 3, 0 } };
+    out.numSamples = 4;
+    out.numInputs = 2;
+    out.layerSizes = { 2 };
+    out.layerActivations = { 0 };
+    out.numOutputs = 1;
 
-    out.kernel_params = {
-        { "dot_product_forward_pass", { "layerDepth", "valueOffsets", "layerValues", "inOutValues", "weightedValues", "networkValues" } },
-        { "sigmoid_activation", { "layerDepth", "layerInputSize", "layerValues", "inOutValues" } },
-        { "sigmoid_train_start", { "layerDepth", "valueOffsets", "derivitiveOuts", "inOutValues", "correctOutput" } },
-        { "sigmoid_train_continue", { "layerError", "layerDepth", "valueOffsets", "networkValues", "derivitiveOuts" } },
-        { "sigmoid_learn", { "layerDepth", "valueOffsets", "weightedValues", "networkValues", "derivitiveOuts" } },
-        { "relu_activation", { "layerDepth", "layerInputSize", "layerValues", "inOutValues" } },
-        { "perceptron_learn", { "layerDepth", "valueOffsets", "networkValues", "weightedValues", "inOutValues", "correctOutput" } },
-    };
+    out.inputLayerParams = LayerParams(out.numInputs, 1, 1);
 
-    std::map<const char*, const char*> inputLayerKernelKeys = {
-        { "forward_pass", "dot_product_forward_pass" },
-        { "train", "sigmoid_train_continue" },
-        { "learn", "sigmoid_learn" },
-    };
+    out.numNeurons = out.numInputs;
+    out.numWeights = 0;
+    out.numLayers = 1;
 
-    std::map<const char*, const char*> hiddenLayerKernelKeys = {
-        { "forward_pass", "dot_product_forward_pass" },
-        { "activate", "sigmoid_activation" },
-        { "train", "sigmoid_train_continue" },
-        { "learn", "sigmoid_learn" },
-    };
-
-    std::map<const char*, const char*> outputLayerKernelKeys = {
-        { "activate", "sigmoid_activation" },
-        { "train", "sigmoid_train_start" },
-    };
-
-    out.valueOffsets = { };
-    out.layerInputSize = { };
-
-    int inputLayerSize = 2;
-    std::vector<int> hiddenLayerSize = { 4, 3, };
-    int outputLayersize = 1;
-
-    int maxValues = inputLayerSize + 1;
-
-    if (outputLayersize > maxValues)
-        maxValues = outputLayersize;
-
-    out.valueOffsets.push_back(0);
-    out.layerInputSize.push_back(inputLayerSize);
-
-    out.inputLayerParams = LayerParams(inputLayerSize, 1, 1, inputLayerKernelKeys);
-
-    int totalNumNetworkValues = inputLayerSize + 1;
-    int totalWeightedValues = totalNumNetworkValues;
-    out.valueOffsets.push_back(totalNumNetworkValues);
-    out.layerInputSize.push_back(inputLayerSize + 1);
-
-    int previousLayerSize = totalWeightedValues;
-    for (int size : hiddenLayerSize)
+    int previousLayerSize = out.numInputs;
+    for (auto data : hiddenLayerParams)
     {
-        LayerParams hiddenP = LayerParams(size, 1, 1, hiddenLayerKernelKeys);
+        LayerParams hiddenP = LayerParams(data[0], 1, 1);
 
         out.hiddenLayerParams.push_back(hiddenP);
-        totalNumNetworkValues += size + 1;
-        totalWeightedValues += (size + 1) * previousLayerSize;
-        previousLayerSize = size + 1;
-        out.valueOffsets.push_back(totalNumNetworkValues);
-        out.layerInputSize.push_back(size + 1);
-        if (size + 1 > maxValues)
-            maxValues = size + 1;
-    }
-    
-    out.outputLayerParams = LayerParams(outputLayersize, 1, 1, outputLayerKernelKeys);
+        out.layerSizes.push_back(data[0]);
+        out.layerActivations.push_back(data[1]);
 
-    out.totalNumOutputs = totalNumNetworkValues + outputLayersize;
-    out.totalNumWeights = totalWeightedValues;
-    out.maxValuesInLayer = maxValues;
-    out.outputLayersize = outputLayersize;
-    out.numLayersInNetwork = out.hiddenLayerParams.size() + 2;
+        out.numNeurons += data[0];
+        out.numWeights += data[0] * previousLayerSize;
+        ++out.numLayers;
+        previousLayerSize = data[0];
+    }
+
+    ++out.numLayers;
+    out.layerSizes.push_back(out.numOutputs);
+    out.numWeights += out.numOutputs * previousLayerSize;
+    out.numNeurons += out.numOutputs;
+    out.outputLayerParams = LayerParams(out.numOutputs, 1, 1);
 
     return out;
 }
@@ -120,7 +80,7 @@ int main() {
 
     std::pair<std::vector<std::vector<float>>, std::vector<float>> trainingData = std::make_pair(inputs, outputs);
 
-    GLuint iterations = 5000;
+    GLuint iterations = 100000;
     network.train(trainingData, iterations, iterations / 10);
 
     int iter = 0;

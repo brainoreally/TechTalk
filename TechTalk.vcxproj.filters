@@ -106,11 +106,11 @@
     <None Include="src\shaders\fragment.glsl">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="src\kernels\perceptronNetwork.cl">
-      <Filter>Source Files\Kernels</Filter>
-    </None>
     <None Include="src\shaders\vertex.glsl">
       <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="src\kernels\perceptron.cl">
+      <Filter>Source Files\Kernels</Filter>
     </None>
   </ItemGroup>
 </Project>

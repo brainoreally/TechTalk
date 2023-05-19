@@ -17,16 +17,26 @@ public:
 	NeuralNetwork<Datatype>(NetworkParams params) : parameters(params) {
 		CLProgram::initCL(parameters.kernel_source_path);
 		CLProgram::setupNetworkOpenCL(&parameters);
-		CLProgram::writeBuffer<unsigned int>("valueOffsets", 0, parameters.valueOffsets);
-		CLProgram::writeBuffer<unsigned int>("layerInputSize", 0, parameters.layerInputSize);
+		CLProgram::writeBuffer<unsigned int>("layerSizes", 0, parameters.layerSizes);
+		CLProgram::writeBuffer<unsigned int>("layerActivations", 0, parameters.layerActivations);
+
+		numNeurons = parameters.numNeurons;
+		numWeights = parameters.numWeights;
+		numLayers = parameters.numLayers;
+
+		unsigned int ncOff;
+		ncOff = CLProgram::writeBuffer<unsigned int>("networkCounts", 0, numNeurons);
+		ncOff = CLProgram::writeBuffer<unsigned int>("networkCounts", ncOff, numWeights);
+		ncOff = CLProgram::writeBuffer<unsigned int>("networkCounts", ncOff, numLayers);
+		ncOff = CLProgram::writeBuffer<unsigned int>("networkCounts", ncOff, parameters.numInputs);
+		ncOff = CLProgram::writeBuffer<unsigned int>("networkCounts", ncOff, parameters.numOutputs);
+		CLProgram::writeBuffer<unsigned int>("networkCounts", ncOff, parameters.numSamples);
+
 
 		inputLayer = InputLayer<Datatype>(parameters.inputLayerParams);
 
-		int valueOffset = 3;
-
 		for (LayerParams hiddenLayerParameters : parameters.hiddenLayerParams) {
-			hiddenLayers.push_back(HiddenLayer<Datatype>(hiddenLayerParameters, valueOffset));
-			valueOffset += 5;
+			hiddenLayers.push_back(HiddenLayer<Datatype>(hiddenLayerParameters));
 		}
 		outputLayer = OutputLayer<Datatype>(parameters.outputLayerParams);
 
@@ -76,22 +86,34 @@ public:
 		if (epoch < 1)
 			epoch = 1;
 
+		int offset = 0;
+		int numSamples = trainingData.first.size();
+
+		for (std::vector<Datatype> sampleInput : trainingData.first) {
+			CLProgram::writeBuffer<float>("neuronValues", offset, sampleInput);
+			offset += numNeurons * sizeof(float);
+		}
+		CLProgram::writeBuffer<float>("correctOutput", 0, trainingData.second);
+		
+		std::vector<float> zeroF = {};
+
+		for (int i = 0; i < numNeurons * numSamples; i++)
+			zeroF.push_back(0.0f);
+
 		while (cyclesLeft > 0 && !earlyEnd) {
 			bool printEpoch = (cyclesLeft % epoch) == 0;
 			if (printEpoch)
 				std::cout << "Remaining steps " << cyclesLeft << ":" << std::endl;
 
 			--cyclesLeft;
+			CLProgram::queueKernel("forward_pass", numSamples * 40, 40);
+			CLProgram::queueKernel("backward_pass", numSamples * 40, 40);
+			CLProgram::queueKernel("learn", numWeights, numWeights);
 
-			for (int i = 0; i < trainingData.first.size(); i++) {
-				int test = 0;
-				int otherTest = 0;
-				inputLayer.predict(trainingData.first[i], false);
-				CLProgram::writeBuffer<float>("correctOutput", 0, { trainingData.second[i] });
-				outputLayer.train();
-				if (printEpoch) {
-					std::cout << "    Testing (" << trainingData.first[i][0] << ", " << trainingData.first[i][1] << "): { Output: " << outputLayer.returnNetworkValues()[0][0] << ", Expected: " << trainingData.second[i] << " }" << std::endl;
-				}
+			if (printEpoch) {
+				std::vector<Datatype> nVals = CLProgram::readBuffer<float>("neuronValues", 0, numSamples * numNeurons);
+				for(int i = 0; i < numSamples; i++)
+					std::cout << "    Testing (" << trainingData.first[i][0] << ", " << trainingData.first[i][1] << "): { Output: " << nVals[(i * numNeurons) + 9] << ", Expected: " << trainingData.second[i] << " }" << std::endl;
 			}
 		}
 		// If we fail to set this the cleanup code for this class can hang.
@@ -110,8 +132,9 @@ public:
 	}
 
 	void predict(std::vector<Datatype> inputs) {
-		std::vector<Datatype> outputP = inputLayer.predict(inputs);
-		std::cout << "Output for values (" + std::to_string(inputs[0]) + ", " + std::to_string(inputs[1]) + ") is: " + std::to_string(outputP[0]) << std::endl;
+		CLProgram::writeBuffer<float>("neuronValues", 0, inputs);
+		CLProgram::queueKernel("forward_pass", 40, 40);
+		std::cout << "Output for values (" + std::to_string(inputs[0]) + ", " + std::to_string(inputs[1]) + ") is: " + std::to_string(outputLayer.returnNetworkValues()[0][0]) << std::endl;
 	}
 
 	std::vector<std::vector<Datatype>> returnNetworkValues() {
@@ -128,4 +151,7 @@ private:
 	NetworkParams parameters;
 
 	bool earlyEnd;
+	unsigned int numLayers;
+	unsigned int numNeurons;
+	unsigned int numWeights;
 };

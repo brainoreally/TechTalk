@@ -52,10 +52,14 @@ void Neuron::draw(glm::vec3 position, GLfloat value)
 
 void Neuron::changeColour(GLfloat neuronValue)
 {
-    if (neuronValue < 0.1)
+    if (neuronValue >= 0.01f && neuronValue <= 0.99f) {
+        colour = glm::vec4({ 1.0f * (1.0f - neuronValue), 1.0f * neuronValue, 0.0f, 1.0f });
+    } else if(neuronValue < 0.01f) {
         colour = glm::vec4({ 1.0f, 0.0f, 0.0f, 1.0f });
-    else
+    }
+    else {
         colour = glm::vec4({ 0.0f, 1.0f, 0.0f, 1.0f });
+    }
 }
 
 objectMeshData Neuron::generateCubeMesh() {

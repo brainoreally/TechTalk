@@ -107,32 +107,20 @@ std::string CLProgram::loadKernelSource(const char* filename)
 }
 
 void CLProgram::setupNetworkOpenCL(NetworkParams* params) {
-    createBuffer<float>("networkValues", params->totalNumOutputs); // float collection - #neurons in network + biases - store all network/layer/node values
-    createBuffer<float>("weightedValues", params->totalNumWeights); // float collection - #values with a weight (inputs on layers + bias) - store all weights in network/layers
-    createBuffer<float>("derivitiveOuts", params->totalNumOutputs); // float collection - #values with a weight - used to store the derivitive loss when learning
-    createBuffer<float>("inOutValues", params->maxValuesInLayer); // float collection - max #values in a layer output - used to pass layer values between layers
-    createBuffer<float>("layerValues", params->maxValuesInLayer); // float collection - max #values in a layer output - used to store current layer values during calculations in layer
-    createBuffer<float>("correctOutput", params->outputLayersize); // float collection - should match the output layer of our network in size - used to provide learning data
-    createBuffer<float>("layerError", 1); // single float - used by network to track current layer error when training
-    createBuffer<unsigned int>("layerDepth", 1); // single int - used by network to track current layer index
-    createBuffer<unsigned int>("valueOffsets", params->numLayersInNetwork); // collection of unsigned ints - used to track offsets for beginning of layers data in networkValues dataset
-    createBuffer<unsigned int>("layerInputSize", params->numLayersInNetwork); // collection of unsigned ints - used to let layers know the size of inputs they have in the GPU
-
-    for (KernelParam param : params->kernel_params)
-    {
-        createKernel(param.key);
-        for (int i = 0; i < param.param_buffer_keys.size(); i++)
-            setKernelParam(param.key, i, param.param_buffer_keys[i]);
-    }
+    createBuffer<unsigned int>("networkCounts", 6); // [0: numNeuronsPerSample, 1: numWeightsPerSample, 2: numLayers, 3: inputLayerSize, , 4: outputLayerSize, 5: numSamples]
+    createBuffer<unsigned int>("layerSizes", params->numLayers); // sizes (#neurons) of each weighted layer
+    createBuffer<unsigned int>("layerActivations", params->numLayers); // enum for choosing layer activation method (0 = sigmod, 1 = relu)
+    createBuffer<float>("correctOutput", params->numOutputs * params->numSamples); // float collection - #neurons in network + biases - store all network/layer/node values
+    createBuffer<float>("neuronValues", params->numNeurons * params->numSamples); // float collection - #neurons in network + biases - store all network/layer/node values
+    createBuffer<float>("weights", params->numWeights); // float collection - #values with a weight (inputs on layers + bias) - store all weights in network/layers
+    createBuffer<float>("weightLoss", params->numNeurons * params->numSamples); // float collection - #values with a weight (inputs on layers + bias) - store all weights in network/layers
+    createBuffer<float>("weightDerivitiveOut", params->numNeurons * params->numSamples); // float collection - #values with a weight (inputs on layers + bias) - store all weights in network/layers
 
     std::vector<KernelParam> network_kernels = {
-        { "reset_depth", { "layerDepth" } },
-        { "advance_layer", { "layerDepth" } },
-        { "decrease_layer", { "layerDepth" } },
-        { "add_outputs_to_network_values", { "layerDepth", "valueOffsets", "networkValues", "inOutValues" } },
-        { "set_layer_error", { "layerError", "layerDepth", "valueOffsets", "networkValues", "derivitiveOuts" } },
+        { "forward_pass", { "networkCounts", "layerSizes", "layerActivations", "neuronValues", "weights" }},
+        { "backward_pass", { "networkCounts", "layerSizes", "correctOutput", "neuronValues", "weights", "weightLoss", "weightDerivitiveOut" }},
+        { "learn", { "networkCounts", "layerSizes", "layerActivations", "neuronValues", "weights", "weightDerivitiveOut", "weightLoss" }},
     };
-
     for (KernelParam param : network_kernels)
     {
         createKernel(param.key);

@@ -4,16 +4,15 @@
 #include <map>
 
 struct LayerParams {
-    LayerParams() : dimX(0), dimY(0), dimZ(0), kernelKeys({}) {}
-    LayerParams(int dataXlength, int dataYlength, int dataZlength, std::map<const char*, const char*> kernKey) :
-        dimX(dataXlength), dimY(dataYlength), dimZ(dataZlength), kernelKeys(kernKey) { }
+    LayerParams() : dimX(0), dimY(0), dimZ(0) {}
+    LayerParams(unsigned int dataXlength, unsigned int dataYlength, unsigned int dataZlength) :
+        dimX(dataXlength), dimY(dataYlength), dimZ(dataZlength) { }
 
-    std::map<const char*, const char*> kernelKeys;
-    int dimX;
-    int dimY;
-    int dimZ;
+    unsigned int dimX;
+    unsigned int dimY;
+    unsigned int dimZ;
 
-    int numNeurons() { return dimX * dimY * dimZ; }
+    unsigned int numNeurons() { return dimX * dimY * dimZ; }
 };
 
 struct KernelParam {
@@ -34,14 +33,15 @@ struct NetworkParams {
     LayerParams inputLayerParams;
     std::vector<LayerParams> hiddenLayerParams;
     LayerParams outputLayerParams;
-    std::vector<unsigned int> valueOffsets;
-    std::vector<unsigned int> layerInputSize;
 
-    std::vector<KernelParam> kernel_params;
-    const char* kernel_source_path;
-    int totalNumOutputs;
-    int totalNumWeights;
-    int maxValuesInLayer;
-    int outputLayersize;
-    int numLayersInNetwork;
+    std::vector<unsigned int> layerSizes;
+    std::vector<unsigned int> layerActivations;
+
+    const char* kernel_source_path = "";
+    unsigned int numInputs = 0;
+    unsigned int numOutputs = 0;
+    unsigned int numNeurons = 0;
+    unsigned int numWeights = 0;
+    unsigned int numSamples = 0;
+    unsigned int numLayers = 0;
 };

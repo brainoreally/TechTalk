@@ -20,6 +20,22 @@ public:
         buffers[buffer_key] = clCreateBuffer(context, CL_MEM_READ_WRITE, buffer_size * sizeof(Datatype), NULL, &err);
     }
 
+    template<typename DataType>
+    static unsigned int writeBuffer(const char* buffer_key, unsigned int offset, std::vector<std::vector<DataType>>& data) {
+        size_t numRows = data.size();
+        size_t numCols = (numRows > 0) ? data[0].size() : 0;
+        size_t bufferSize = numRows * numCols * sizeof(DataType);
+        std::vector<DataType> test;
+        for (int x = 0; x < numRows; x++) {
+            for (int y = 0; y < numCols; y++) {
+                test.push_back(data[x][y]);
+            }
+        }
+
+        return writeBuffer<DataType>(buffer_key, offset, test);
+    }
+
+
     template<typename Datatype>
     static unsigned int writeBuffer(const char* buffer_key, unsigned int offset, std::vector<Datatype> data) {
         clEnqueueWriteBuffer(command_queue, buffers[buffer_key], CL_TRUE, offset, data.size() * sizeof(Datatype), &data[0], 0, NULL, NULL);
