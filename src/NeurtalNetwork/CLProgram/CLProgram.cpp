@@ -113,13 +113,12 @@ void CLProgram::setupNetworkOpenCL(NetworkParams* params) {
     createBuffer<float>("correctOutput", params->numOutputs * params->numSamples); // float collection - #neurons in network + biases - store all network/layer/node values
     createBuffer<float>("neuronValues", params->numNeurons * params->numSamples); // float collection - #neurons in network + biases - store all network/layer/node values
     createBuffer<float>("weights", params->numWeights); // float collection - #values with a weight (inputs on layers + bias) - store all weights in network/layers
-    createBuffer<float>("weightLoss", params->numNeurons * params->numSamples); // float collection - #values with a weight (inputs on layers + bias) - store all weights in network/layers
     createBuffer<float>("weightDerivitiveOut", params->numNeurons * params->numSamples); // float collection - #values with a weight (inputs on layers + bias) - store all weights in network/layers
 
     std::vector<KernelParam> network_kernels = {
         { "forward_pass", { "networkCounts", "layerSizes", "layerActivations", "neuronValues", "weights" }},
-        { "backward_pass", { "networkCounts", "layerSizes", "correctOutput", "neuronValues", "weights", "weightLoss", "weightDerivitiveOut" }},
-        { "learn", { "networkCounts", "layerSizes", "layerActivations", "neuronValues", "weights", "weightDerivitiveOut", "weightLoss" }},
+        { "backward_pass", { "networkCounts", "layerSizes", "layerActivations", "correctOutput", "neuronValues", "weights", "weightDerivitiveOut" }},
+        { "learn", { "networkCounts", "layerSizes", "neuronValues", "weights", "weightDerivitiveOut" }},
     };
     for (KernelParam param : network_kernels)
     {

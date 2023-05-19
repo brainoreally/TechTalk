@@ -9,11 +9,11 @@ NetworkParams buildPerceptronParams() {
     NetworkParams out = NetworkParams();
 
     out.kernel_source_path = "src/kernels/perceptron.cl";
-    std::vector<std::vector<int>> hiddenLayerParams = { { 4, 0 }, { 3, 0 } };
+    std::vector<std::vector<int>> hiddenLayerParams = { { 5, 0 }, { 4, 0 }, { 2, 0 }, };
     out.numSamples = 4;
     out.numInputs = 2;
     out.layerSizes = { 2 };
-    out.layerActivations = { 0 };
+    out.layerActivations = { 1 };
     out.numOutputs = 1;
 
     out.inputLayerParams = LayerParams(out.numInputs, 1, 1);

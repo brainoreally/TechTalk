@@ -82,10 +82,10 @@ __kernel void forward_pass(
 __kernel void backward_pass(
 	__global unsigned int* networkCounts,
 	__global unsigned int* layerSizes,
+	__global unsigned int* layerActivations,
 	__global float* correctOutput,
 	__global float* neuronValues,
 	__global float* weights,
-	__global float* weightLoss,
 	__global float* weightDerivitiveOut
 )
 {
@@ -108,8 +108,14 @@ __kernel void backward_pass(
 	if (neuronID < layerSizes[currentLayer]) {
 		int nOff = nSOff + layerOffset + neuronID;
 
-		weightLoss[nOff] = correctOutput[(sampleIndex * networkCounts[4]) + neuronID] - neuronValues[nOff];
-		weightDerivitiveOut[nOff] = weightLoss[nOff] * sigmoid_derivitive(neuronValues[nOff]);
+		float loss = correctOutput[(sampleIndex * networkCounts[4]) + neuronID] - neuronValues[nOff];
+
+		if (layerActivations[currentLayer] == 0) {
+			weightDerivitiveOut[nOff] = loss * sigmoid_derivitive(neuronValues[nOff]);
+		}
+		else {
+			weightDerivitiveOut[nOff] = loss * relu_derivitive(neuronValues[nOff]);
+		}
 	}
 
 	unsigned int oldWeightOff;
@@ -132,8 +138,12 @@ __kernel void backward_pass(
 				int wOff = weightOffset + neuronID + (nextLayerIter * layerSizes[currentLayer]);
 				loss += weightDerivitiveOut[nSOff + oldLayerOff + nextLayerIter] * weights[wOff];
 			}
-			weightLoss[nOff] = loss;
-			weightDerivitiveOut[nOff] = loss * sigmoid_derivitive(neuronValues[nOff]);
+			if (layerActivations[currentLayer] == 0) {
+				weightDerivitiveOut[nOff] = loss * sigmoid_derivitive(neuronValues[nOff]);
+			}
+			else {
+				weightDerivitiveOut[nOff] = loss * relu_derivitive(neuronValues[nOff]);
+			}
 		}
 
 		oldWeightOff = weightOffset;
@@ -144,11 +154,9 @@ __kernel void backward_pass(
 __kernel void learn(
 	__global unsigned int* networkCounts,
 	__global unsigned int* layerSizes,
-	__global unsigned int* layerActivations,
 	__global float* neuronValues,
 	__global float* weights,
-	__global float* weightDerivitiveOut,
-	__global float* weightLoss
+	__global float* weightDerivitiveOut
 )
 {
 	const unsigned int weightID = get_local_id(0);
