@@ -81,8 +81,12 @@ void CLProgram::queueKernel(const char* kernel_key, size_t global, size_t local)
 {
     cl_event kernel_event;
 
+    if (err != 0)
+        int test = 1;
     // Execute the kernel
     err = clEnqueueNDRangeKernel(command_queue, kernels[kernel_key], 1, NULL, &global, &local, 0, NULL, &kernel_event);
+    if (err != 0)
+        int test = 1;
     // Wait for the kernel to complete
     clWaitForEvents(1, &kernel_event);
 
@@ -118,7 +122,6 @@ void CLProgram::setupNetworkOpenCL(NetworkParams* params) {
     std::vector<KernelParam> network_kernels = {
         { "forward_pass", { "networkCounts", "layerSizes", "layerActivations", "neuronValues", "weights" }},
         { "backward_pass", { "networkCounts", "layerSizes", "layerActivations", "correctOutput", "neuronValues", "weights", "weightDerivitiveOut" }},
-        { "learn", { "networkCounts", "layerSizes", "neuronValues", "weights", "weightDerivitiveOut" }},
     };
     for (KernelParam param : network_kernels)
     {

@@ -14,9 +14,9 @@ public:
 		: Layer<Datatype>(params) { }
 	~OutputLayer() {}
 
-	std::vector<std::vector<Datatype>> returnNetworkValues() override {
+	std::vector<std::vector<Datatype>> returnNetworkValues(unsigned int offset) override {
 		std::vector<std::vector<Datatype>> returnValues;
-		this->setNeuronValues(CLProgram::readBuffer<float>("neuronValues", this->previousLayer->getNeuronValueOffset(), this->numNeurons));
+		this->setNeuronValues(CLProgram::readBuffer<float>("neuronValues", offset + this->previousLayer->getNeuronValueOffset(), this->numNeurons));
 		returnValues.push_back(this->neuronValues);
 		return returnValues;
 	}

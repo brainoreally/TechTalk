@@ -87,11 +87,15 @@ public:
 			epoch = 1;
 
 		int offset = 0;
-		int numSamples = trainingData.first.size();
+		numSamples = trainingData.first.size();
 
+		int iter = 0;
 		for (std::vector<Datatype> sampleInput : trainingData.first) {
-			CLProgram::writeBuffer<float>("neuronValues", offset, sampleInput);
-			offset += numNeurons * sizeof(float);
+			if (iter < numSamples) {
+				iter++;
+				CLProgram::writeBuffer<float>("neuronValues", offset, sampleInput);
+				offset += numNeurons * sizeof(float);
+			}
 		}
 		CLProgram::writeBuffer<float>("correctOutput", 0, trainingData.second);
 		
@@ -101,20 +105,9 @@ public:
 			zeroF.push_back(0.0f);
 
 		while (cyclesLeft > 0 && !earlyEnd) {
-			bool printEpoch = (cyclesLeft % epoch) == 0;
-			if (printEpoch)
-				std::cout << "Remaining steps " << cyclesLeft << ":" << std::endl;
-
 			--cyclesLeft;
-			CLProgram::queueKernel("forward_pass", numSamples * 40, 40);
-			CLProgram::queueKernel("backward_pass", numSamples * 40, 40);
-			CLProgram::queueKernel("learn", numWeights, numWeights);
-
-			if (printEpoch) {
-				std::vector<Datatype> nVals = CLProgram::readBuffer<float>("neuronValues", 0, numSamples * numNeurons);
-				for(int i = 0; i < numSamples; i++)
-					std::cout << "    Testing (" << trainingData.first[i][0] << ", " << trainingData.first[i][1] << "): { Output: " << nVals[(i * numNeurons) + 9] << ", Expected: " << trainingData.second[i] << " }" << std::endl;
-			}
+			CLProgram::queueKernel("forward_pass", numSamples * numNeurons, numNeurons);
+			CLProgram::queueKernel("backward_pass", numSamples * numNeurons, numNeurons);
 		}
 		// If we fail to set this the cleanup code for this class can hang.
 		training = false;
@@ -133,25 +126,35 @@ public:
 
 	void predict(std::vector<Datatype> inputs) {
 		CLProgram::writeBuffer<float>("neuronValues", 0, inputs);
-		CLProgram::queueKernel("forward_pass", 40, 40);
-		std::cout << "Output for values (" + std::to_string(inputs[0]) + ", " + std::to_string(inputs[1]) + ") is: " + std::to_string(outputLayer.returnNetworkValues()[0][0]) << std::endl;
+		CLProgram::queueKernel("forward_pass", numNeurons, numNeurons);
+		std::cout << "Output for values (" + std::to_string(inputs[0]) + ", " + std::to_string(inputs[1]) + ") is: " + std::to_string(outputLayer.returnNetworkValues(0)[0][0]) << std::endl;
 	}
 
 	std::vector<std::vector<Datatype>> returnNetworkValues() {
-		return inputLayer.returnNetworkValues();
+		unsigned int offset = 0;
+
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_real_distribution<Datatype> dis(0, numSamples);
+
+		offset = dis(gen);
+
+		return inputLayer.returnNetworkValues(offset * numNeurons);
 	}
 
 	bool training;
+	uint32_t cyclesLeft;
 private:
 	InputLayer<Datatype> inputLayer;
 	std::vector<HiddenLayer<Datatype>> hiddenLayers;
 	OutputLayer<Datatype> outputLayer;
 
-	uint32_t epoch, cyclesLeft;
+	uint32_t epoch;
 	NetworkParams parameters;
 
 	bool earlyEnd;
 	unsigned int numLayers;
 	unsigned int numNeurons;
 	unsigned int numWeights;
+	unsigned int numSamples;
 };

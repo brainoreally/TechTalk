@@ -21,7 +21,7 @@ public:
 		}
 	}
 
-	virtual std::vector<std::vector<Datatype>> returnNetworkValues() { return { {} }; }
+	virtual std::vector<std::vector<Datatype>> returnNetworkValues(unsigned int offset) { return { {} }; }
 
 	virtual unsigned int getNeuronValueOffset() {
 		int offset = numNeuronValues();

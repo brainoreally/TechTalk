@@ -9,8 +9,8 @@ Graphics::Graphics() {
     SetWindowPos(consoleWindow, NULL, 0, 50, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 
     // Define screen size
-    resolutionX = 1800;
-    resolutionY = 1200;
+    resolutionX = 2400;
+    resolutionY = 2000;
 
     // Initialize GLFW
     if (!glfwInit()) {
@@ -104,7 +104,7 @@ void Graphics::setupScene() {
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
     // Set the projection matrix
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)resolutionX / (float)resolutionY, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(90.0f), (float)resolutionX / (float)resolutionY, 0.1f, 20000.0f);
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
     // Activate the shader program
@@ -123,15 +123,35 @@ bool Graphics::is_running() {
 
 void Graphics::drawNeurons(std::vector<std::vector<GLfloat>> networkValues)
 {
-    GLfloat zPos = networkValues.size() * -2.0f;
     GLfloat xPos = networkValues.size() * -0.75f;
+    GLfloat zPos = networkValues.size() * -5.0f;
+    
+    bool first = true;
     for (std::vector<GLfloat> layerValues : networkValues) {
-        GLfloat yPos = layerValues.size() * -0.75f;
-        for (GLfloat neuronValue : layerValues) {
-            Neuron::draw(glm::vec3(xPos, yPos, zPos), neuronValue);
-            yPos += 1.5f;
+        if (first) {
+            int iter = 0;
+            for (int y = 0; y < 28; y++) {
+                GLfloat xOff = -70.0f;
+                GLfloat yPos = 20.0f - (1.5f * y);
+                GLfloat zOff = -50.0f;
+                for (int x = 0; x < 28; x++) {
+
+                    Neuron::draw(glm::vec3(xOff, yPos, zPos + zOff), layerValues[iter]);
+                    xOff += 1.5f;
+                    ++iter;
+                }
+            }
+            first = false;
         }
-        xPos += 1.5f;
+        else
+        {
+            GLfloat yPos = layerValues.size() * -0.75f;
+            for (GLfloat neuronValue : layerValues) {
+                Neuron::draw(glm::vec3(xPos, yPos, zPos), neuronValue);
+                yPos += 1.5f;
+            }
+            xPos += 1.5f;
+        }
     }
 }
 
