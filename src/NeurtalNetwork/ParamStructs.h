@@ -44,4 +44,5 @@ struct NetworkParams {
     unsigned int numWeights = 0;
     unsigned int numSamples = 0;
     unsigned int numLayers = 0;
+    unsigned int maxNeuronInFwd = 0;
 };

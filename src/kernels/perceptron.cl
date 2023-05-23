@@ -46,12 +46,32 @@ float relu_activation(
 	return max(0.0f, value);
 }
 
+__kernel void network_output(
+	__global unsigned int* networkCounts,
+	__global float* correctOutput,
+	__global float* neuronValues
+)
+{
+
+	float loss = 0.0f;
+	int outputLayerOff = networkCounts[0] - networkCounts[4];
+	for (unsigned int sampleIter = 0; sampleIter < networkCounts[5]; sampleIter++)
+		for (unsigned int neuronIter = 0; neuronIter < networkCounts[4]; neuronIter++)
+			loss += correctOutput[(sampleIter * networkCounts[4]) + neuronIter] - neuronValues[(sampleIter * networkCounts[0]) + outputLayerOff + neuronIter];
+	loss /= (networkCounts[5] * networkCounts[4]);
+	
+	if (networkCounts[6] % networkCounts[7] == 0)
+		printf("Epoch: %i - Error: %f\n", networkCounts[6], loss);
+	--networkCounts[6];
+}
+
 __kernel void forward_pass(
 	__global unsigned int* networkCounts,
 	__global unsigned int* layerSizes,
 	__global unsigned int* layerActivations,
 	__global float* neuronValues,
-	__global float* weights
+	__global float* weights,
+	__global float* biases
 )
 {
 	const unsigned int sampleIndex = get_global_id(0) / get_local_size(0);
@@ -66,10 +86,10 @@ __kernel void forward_pass(
 		if (neuronID < layerSizes[currentLayer]) {
 			int nOff = nSOff + layerOffset + neuronID;
 			if (layerActivations[currentLayer] == 0) {
-				neuronValues[nOff] = sigmoid_activation(dot_prod(weights, neuronValues, layerSizes[currentLayer - 1], nSOff + layerOffset - layerSizes[currentLayer - 1], weightOffset + (neuronID * layerSizes[currentLayer - 1])));
+				neuronValues[nOff] = sigmoid_activation(dot_prod(weights, neuronValues, layerSizes[currentLayer - 1], nSOff + layerOffset - layerSizes[currentLayer - 1], weightOffset + (neuronID * layerSizes[currentLayer - 1])) + biases[nOff]);
 			}
 			else {
-				neuronValues[nOff] = relu_activation(dot_prod(weights, neuronValues, layerSizes[currentLayer - 1], nSOff + layerOffset - layerSizes[currentLayer - 1], weightOffset + (neuronID * layerSizes[currentLayer - 1])));
+				neuronValues[nOff] = relu_activation(dot_prod(weights, neuronValues, layerSizes[currentLayer - 1], nSOff + layerOffset - layerSizes[currentLayer - 1], weightOffset + (neuronID * layerSizes[currentLayer - 1])) + biases[nOff]);
 			}
 		}
 
@@ -86,6 +106,7 @@ __kernel void backward_pass(
 	__global float* correctOutput,
 	__global float* neuronValues,
 	__global float* weights,
+	__global float* biases,
 	__global float* weightDerivitiveOut
 )
 {
@@ -151,6 +172,33 @@ __kernel void backward_pass(
 	}	
 
 	barrier(CLK_GLOBAL_MEM_FENCE);
+	
+	if (neuronID < networkCounts[0] && neuronID >= layerSizes[0] && sampleIndex == 0) {
+		unsigned int currentLayer = 1;
+		unsigned int sourceNeuronOffset = 0;
+		unsigned int lastTotal = layerSizes[0];
+
+		for (int iter = 0; iter < networkCounts[2]; iter++) {
+			if (neuronID >= lastTotal) {
+				lastTotal += layerSizes[currentLayer];
+				sourceNeuronOffset += layerSizes[currentLayer - 1];
+				currentLayer++;
+			}
+		}
+
+		float learningRate = 0.01;
+		float avgChange = 0.0f;
+		for (int sampleIter = 0; sampleIter < networkCounts[5]; sampleIter++) {
+			int sampleOff = networkCounts[0] * sampleIter;
+			for(int neuronIter = 0; neuronIter < layerSizes[currentLayer - 1]; neuronIter++)
+				avgChange += weightDerivitiveOut[sampleOff + sourceNeuronOffset + neuronIter] * neuronValues[sampleOff + neuronID] * learningRate;
+		}
+
+		biases[neuronID] += avgChange / networkCounts[5];
+	}
+
+	barrier(CLK_GLOBAL_MEM_FENCE);
+
 	const unsigned int weightID = get_global_id(0);
 	
 	if (weightID < networkCounts[1]) {

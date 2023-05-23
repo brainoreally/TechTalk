@@ -61,7 +61,12 @@ public:
 			weights.push_back(dis(gen));
 		}
 
+		for (int i = 0; i < numNeuronValues(); i++) {
+			biases.push_back(1.0f);
+		}
+
 		CLProgram::writeBuffer<Datatype>("weights", previousLayer->getWeightsOffset(), weights);
+		CLProgram::writeBuffer<Datatype>("biases", previousLayer->getNeuronValueOffset(), biases);
 		numWeightedValGlobal = numWeights();
 		previousLayer->finishLayerSetup();
 	}
@@ -70,6 +75,15 @@ protected:
 	Layer<Datatype>* previousLayer;
 	Layer<Datatype>* nextLayer;
 
+	int numNeurons;
+	std::vector<Datatype> neuronValues;
+	std::vector<Datatype> weights;
+	std::vector<Datatype> biases;
+
+	size_t numNeuronGlobal;
+	size_t numWeightedValGlobal;
+
+public:
 	int numNeuronValues() {
 		return numNeurons;
 	}
@@ -77,11 +91,4 @@ protected:
 	virtual int numWeights() {
 		return numNeuronValues() * previousLayer->numNeuronValues();
 	}
-
-	int numNeurons;
-	std::vector<Datatype> neuronValues;
-	std::vector<Datatype> weights;
-
-	size_t numNeuronGlobal;
-	size_t numWeightedValGlobal;
 };

@@ -9,12 +9,12 @@ NetworkParams buildMNISTParams() {
     NetworkParams out = NetworkParams();
 
     out.kernel_source_path = "src/kernels/perceptron.cl";
-    std::vector<std::vector<int>> hiddenLayerParams = { { 64, 0 }, { 32, 0 }, { 16, 0 }, { 8, 0 } };
+    std::vector<std::vector<int>> hiddenLayerParams = { { 18, 1 }, { 16, 1 }, { 14, 1 }, { 12, 1 } };
     out.numSamples = 60000;
     out.numInputs = 784;
     out.layerSizes = { out.numInputs };
     out.layerActivations = { 0 };
-    out.numOutputs = 1;
+    out.numOutputs = 10;
 
     out.inputLayerParams = LayerParams(out.numInputs, 1, 1);
 
@@ -50,11 +50,12 @@ NetworkParams buildPerceptronParams() {
     NetworkParams out = NetworkParams();
 
     out.kernel_source_path = "src/kernels/perceptron.cl";
-    std::vector<std::vector<int>> hiddenLayerParams = { { 5, 0 }, { 4, 0 }, { 2, 0 }, };
+    std::vector<std::vector<int>> hiddenLayerParams = { { 8, 0 }, { 4, 0 }, { 2, 0 }, };
+    out.maxNeuronInFwd = 8;
     out.numSamples = 4;
     out.numInputs = 2;
     out.layerSizes = { 2 };
-    out.layerActivations = { 1 };
+    out.layerActivations = { 0 };
     out.numOutputs = 1;
 
     out.inputLayerParams = LayerParams(out.numInputs, 1, 1);
@@ -88,9 +89,8 @@ NetworkParams buildPerceptronParams() {
 }
 
 
-std::pair<std::vector<std::vector<float>>, std::vector<float>> convert(std::pair<std::vector<std::vector<uint8_t>>, std::vector<uint8_t>> in) {
+std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> convert(std::pair<std::vector<std::vector<uint8_t>>, std::vector<std::vector<float>>> in) {
     std::vector<std::vector<float>> floatInput;
-    std::vector<float> floatOutput;
 
     // Convert input values to floats between 0 and 1
     for (const auto& row : in.first) {
@@ -102,16 +102,10 @@ std::pair<std::vector<std::vector<float>>, std::vector<float>> convert(std::pair
         floatInput.push_back(floatRow);
     }
 
-    // Convert output values to floats between 0 and 1
-    for (const auto& value : in.second) {
-        float floatValue = static_cast<float>(value) / 255.0f;
-        floatOutput.push_back(floatValue);
-    }
-
-    return std::make_pair(floatInput, floatOutput);
+    return std::make_pair(floatInput, in.second);
 }
 
-std::pair<std::vector<std::vector<float>>, std::vector<float>> loadMNISTData()
+std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> loadMNISTData()
 {
     std::string input_path = "MNIST/";
     std::string training_images_filepath = input_path + "train-images-idx3-ubyte/train-images-idx3-ubyte";
@@ -120,13 +114,13 @@ std::pair<std::vector<std::vector<float>>, std::vector<float>> loadMNISTData()
     std::string test_labels_filepath = input_path + "t10k-labels-idx1-ubyte/t10k-labels-idx1-ubyte";
     MnistDataloader mnistData = MnistDataloader(training_images_filepath, training_labels_filepath, test_images_filepath, test_labels_filepath);
 
-    auto test = mnistData.load_data();
+    auto test = mnistData.load_data_f();
     return convert(test);// mnistData.load_data_f();
 }
 
 int main() {
     Graphics graphics = Graphics();
-    /*
+    
     NetworkParams perceptronNetworkParams = buildPerceptronParams();
     
     NeuralNetwork<float> network = NeuralNetwork<float>(perceptronNetworkParams);
@@ -138,20 +132,21 @@ int main() {
             { 1.0f, 1.0f },
     };
 
-    std::vector<float> outputs = {
-        0.0f,
-        1.0f,
-        1.0f,
-        1.0f
+    std::vector<std::vector<float>> outputs = {
+       { 0.0f },
+       { 1.0f },
+       { 1.0f },
+       { 1.0f }
     };
 
-    std::pair<std::vector<std::vector<float>>, std::vector<float>> trainingData = std::make_pair(inputs, outputs);
-    */
+    std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> trainingData = std::make_pair(inputs, outputs);
+    /*
     NetworkParams mnistNetworkParams = buildMNISTParams();
     NeuralNetwork<float> network = NeuralNetwork<float>(mnistNetworkParams);
-    std::pair<std::vector<std::vector<float>>, std::vector<float>> trainingData = loadMNISTData();
-    
-    GLuint iterations = 1000;
+    std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> trainingData = loadMNISTData();
+    */
+
+    GLuint iterations = 1000000;
     network.train(trainingData, iterations, iterations / 100);
 
     int iter = 0;
@@ -163,7 +158,7 @@ int main() {
         auto now = std::chrono::high_resolution_clock::now();
         
         if (!network.training && std::chrono::duration_cast<std::chrono::milliseconds>(now - last_prediction_time).count() >= 500) {
-            network.predict(trainingData.first[iter]);
+            network.predict(trainingData.first[iter], trainingData.second[iter]);
             iter = (iter + 1) % trainingData.second.size();
             last_prediction_time = now;  // update last prediction time
         }

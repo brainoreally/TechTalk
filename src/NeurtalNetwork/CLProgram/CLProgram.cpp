@@ -111,17 +111,19 @@ std::string CLProgram::loadKernelSource(const char* filename)
 }
 
 void CLProgram::setupNetworkOpenCL(NetworkParams* params) {
-    createBuffer<unsigned int>("networkCounts", 6); // [0: numNeuronsPerSample, 1: numWeightsPerSample, 2: numLayers, 3: inputLayerSize, , 4: outputLayerSize, 5: numSamples]
+    createBuffer<unsigned int>("networkCounts", 8); // [0: numNeuronsPerSample, 1: numWeightsPerSample, 2: numLayers, 3: inputLayerSize, , 4: outputLayerSize, 5: numSamples, 6: trainingLeft, 7: epoch]
     createBuffer<unsigned int>("layerSizes", params->numLayers); // sizes (#neurons) of each weighted layer
     createBuffer<unsigned int>("layerActivations", params->numLayers); // enum for choosing layer activation method (0 = sigmod, 1 = relu)
     createBuffer<float>("correctOutput", params->numOutputs * params->numSamples); // float collection - #neurons in network + biases - store all network/layer/node values
     createBuffer<float>("neuronValues", params->numNeurons * params->numSamples); // float collection - #neurons in network + biases - store all network/layer/node values
     createBuffer<float>("weights", params->numWeights); // float collection - #values with a weight (inputs on layers + bias) - store all weights in network/layers
+    createBuffer<float>("biases", params->numNeurons); // float collection - #bias param for each neuron
     createBuffer<float>("weightDerivitiveOut", params->numNeurons * params->numSamples); // float collection - #values with a weight (inputs on layers + bias) - store all weights in network/layers
 
     std::vector<KernelParam> network_kernels = {
-        { "forward_pass", { "networkCounts", "layerSizes", "layerActivations", "neuronValues", "weights" }},
-        { "backward_pass", { "networkCounts", "layerSizes", "layerActivations", "correctOutput", "neuronValues", "weights", "weightDerivitiveOut" }},
+        { "network_output", { "networkCounts", "correctOutput", "neuronValues" }},
+        { "forward_pass", { "networkCounts", "layerSizes", "layerActivations", "neuronValues", "weights", "biases" }},
+        { "backward_pass", { "networkCounts", "layerSizes", "layerActivations", "correctOutput", "neuronValues", "weights", "biases", "weightDerivitiveOut" }},
     };
     for (KernelParam param : network_kernels)
     {

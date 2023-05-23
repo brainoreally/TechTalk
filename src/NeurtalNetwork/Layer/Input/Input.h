@@ -15,7 +15,7 @@ public:
 
 	std::vector<std::vector<Datatype>> returnNetworkValues(unsigned int offset) override {
 		std::vector<std::vector<Datatype>> returnValues;
-		std::vector<Datatype> nVals = CLProgram::readBuffer<float>("neuronValues", offset, this->numNeurons);
+		std::vector<Datatype> nVals = CLProgram::readBuffer<Datatype>("neuronValues", offset, this->numNeurons);
 		this->setNeuronValues(nVals);
 		returnValues.push_back(this->neuronValues);
 		std::vector<std::vector<Datatype>> nextLayerValues = this->nextLayer->returnNetworkValues(offset);

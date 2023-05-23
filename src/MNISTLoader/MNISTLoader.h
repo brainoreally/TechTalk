@@ -21,7 +21,7 @@ public:
         return std::make_pair(std::move(train.first), std::move(train.second));
     }
 
-    std::pair<std::vector<std::vector<float>>, std::vector<float>> load_data_f() {
+    std::pair<std::vector<std::vector<uint8_t>>, std::vector<std::vector<float>>> load_data_f() {
         auto train = read_images_labels_f(training_images_filepath, training_labels_filepath);
         auto test = read_images_labels_f(test_images_filepath, test_labels_filepath);
         return std::make_pair(std::move(train.first), std::move(train.second));
@@ -83,9 +83,18 @@ private:
 
         return std::make_pair(std::move(images), std::move(labels));
     }
+    std::vector<std::vector<float>> one_hot_label(std::vector<char> labels) {
+        std::vector<std::vector<float>> output = { };
+        for (char label : labels) {
+            std::vector<float> one_hot_val = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            one_hot_val[label] = 1;
+            output.push_back(one_hot_val);
+        }
+        return output;
+    }
 
-    std::pair<std::vector<std::vector<float>>, std::vector<float>> read_images_labels_f(const std::string& images_filepath, const std::string& labels_filepath) {
-        std::vector<float> labels;
+    std::pair<std::vector<std::vector<uint8_t>>, std::vector<std::vector<float>>> read_images_labels_f(const std::string& images_filepath, const std::string& labels_filepath) {
+        std::vector<char> labels;
         std::ifstream file(labels_filepath, std::ios::binary);
         if (!file.is_open()) {
             throw std::runtime_error("Failed to open file: " + labels_filepath);
@@ -102,7 +111,7 @@ private:
         file.read(reinterpret_cast<char*>(labels.data()), label_count);
         file.close();
 
-        std::vector<std::vector<float>> images;
+        std::vector<std::vector<uint8_t>> images;
         file.open(images_filepath, std::ios::binary);
         if (!file.is_open()) {
             throw std::runtime_error("Failed to open file: " + images_filepath);
@@ -119,12 +128,12 @@ private:
         if (image_magic_number != 2051) {
             throw std::runtime_error("Invalid magic number for images file: " + std::to_string(image_magic_number));
         }
-        images.resize(image_count, std::vector<float>(rows * cols));
+        images.resize(image_count, std::vector<uint8_t>(rows * cols));
         for (size_t i = 0; i < image_count; ++i) {
             file.read(reinterpret_cast<char*>(images[i].data()), rows * cols);
         }
         file.close();
-
-        return std::make_pair(std::move(images), std::move(labels));
+        
+        return std::make_pair(std::move(images), one_hot_label(labels));
     }
 };
