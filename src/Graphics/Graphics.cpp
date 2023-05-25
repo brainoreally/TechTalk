@@ -158,7 +158,7 @@ void Graphics::drawNeurons(std::vector<std::vector<GLfloat>> networkValues, std:
             weightVals = weights[i - 1];
             biasVals = biases[i - 1];
         }
-        for (int neuronIter = 0; neuronIter < networkValues[i].size() - 1; neuronIter++) {
+        for (int neuronIter = 0; neuronIter < networkValues[i].size(); neuronIter++) {
             glm::vec3 pos = glm::vec3(xPos, yPos, zPos);
             newPositions.push_back(pos);
             int bias = 0;
