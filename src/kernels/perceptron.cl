@@ -48,20 +48,36 @@ float relu_activation(
 
 __kernel void network_output(
 	__global unsigned int* networkCounts,
+	__global unsigned int* layerSizes,
 	__global float* correctOutput,
 	__global float* neuronValues
 )
 {
+	if (networkCounts[6] % networkCounts[7] == 0) {
+		float loss = 0.0f;
+		int outputLayerOff = networkCounts[0] - networkCounts[4];
+		for (unsigned int sampleIter = 0; sampleIter < networkCounts[5]; sampleIter++)
+			for (unsigned int neuronIter = 0; neuronIter < networkCounts[4]; neuronIter++)
+				loss += correctOutput[(sampleIter * networkCounts[4]) + neuronIter] - neuronValues[(sampleIter * networkCounts[0]) + outputLayerOff + neuronIter];
+		loss /= (networkCounts[5] * networkCounts[4]);
 
-	float loss = 0.0f;
-	int outputLayerOff = networkCounts[0] - networkCounts[4];
-	for (unsigned int sampleIter = 0; sampleIter < networkCounts[5]; sampleIter++)
-		for (unsigned int neuronIter = 0; neuronIter < networkCounts[4]; neuronIter++)
-			loss += correctOutput[(sampleIter * networkCounts[4]) + neuronIter] - neuronValues[(sampleIter * networkCounts[0]) + outputLayerOff + neuronIter];
-	loss /= (networkCounts[5] * networkCounts[4]);
-	
-	if (networkCounts[6] % networkCounts[7] == 0)
+
 		printf("Epoch: %i - Error: %f\n", networkCounts[6], loss);
+
+		for (int sampleIter = 0; sampleIter < 4; sampleIter++) {
+			int layerOffset = 0;
+			for (int layerIter = 0; layerIter < networkCounts[2]; layerIter++) {
+				printf("{ ");
+				for (int neuronIter = 0; neuronIter < layerSizes[layerIter]; neuronIter++) {
+					printf("%f, ", neuronValues[(sampleIter * networkCounts[0]) + layerOffset + neuronIter]);
+				}
+				printf("}, ");
+				layerOffset += layerSizes[layerIter];
+			}
+			printf("\n");
+
+		}
+	}
 	--networkCounts[6];
 }
 

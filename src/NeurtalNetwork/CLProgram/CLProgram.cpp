@@ -121,7 +121,7 @@ void CLProgram::setupNetworkOpenCL(NetworkParams* params) {
     createBuffer<float>("weightDerivitiveOut", params->numNeurons * params->numSamples); // float collection - #values with a weight (inputs on layers + bias) - store all weights in network/layers
 
     std::vector<KernelParam> network_kernels = {
-        { "network_output", { "networkCounts", "correctOutput", "neuronValues" }},
+        { "network_output", { "networkCounts", "layerSizes", "correctOutput", "neuronValues" }},
         { "forward_pass", { "networkCounts", "layerSizes", "layerActivations", "neuronValues", "weights", "biases" }},
         { "backward_pass", { "networkCounts", "layerSizes", "layerActivations", "correctOutput", "neuronValues", "weights", "biases", "weightDerivitiveOut" }},
     };
