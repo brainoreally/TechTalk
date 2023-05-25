@@ -104,11 +104,17 @@ public:
 
 		for (int i = 0; i < numNeurons * numSamples; i++)
 			zeroF.push_back(0.0f);
+		int batchSize = numSamples;
+		CLProgram::writeBuffer<unsigned int>("networkCounts", 8 * sizeof(unsigned int), batchSize);
+		CLProgram::writeBuffer<unsigned int>("networkCounts", 9 * sizeof(unsigned int), 0);
 
 		while (cyclesLeft > 0 && !earlyEnd) {
 			--cyclesLeft;
-			CLProgram::queueKernel("forward_pass", numSamples * maxNeuronInFwd, maxNeuronInFwd);
-			CLProgram::queueKernel("backward_pass", numSamples * numNeurons, numNeurons);
+			for (int batch = 0; batch < (numSamples / batchSize); batch++) {
+				CLProgram::queueKernel("forward_pass", batchSize * maxNeuronInFwd, maxNeuronInFwd);
+				CLProgram::queueKernel("backward_pass", batchSize * numWeights, numWeights);
+				//CLProgram::queueKernel("batch_output", 1, 1);
+			}
 			CLProgram::queueKernel("network_output", 1, 1);
 		}
 		// If we fail to set this the cleanup code for this class can hang.
@@ -132,7 +138,9 @@ public:
 	void predict(std::vector<Datatype> inputs, std::vector<Datatype> expectedResult) {
 		CLProgram::writeBuffer<float>("neuronValues", 0, inputs);
 		CLProgram::writeBuffer<float>("correctOutput", 0, expectedResult);
+		CLProgram::writeBuffer<unsigned int>("networkCounts", 9 * sizeof(unsigned int), 0);
 		CLProgram::queueKernel("forward_pass", maxNeuronInFwd, maxNeuronInFwd);
+		auto test = CLProgram::readBuffer<float>("neuronValues", 0, numNeurons);
 		std::cout << "Output for values (" + std::to_string(inputs[0]) + ", " + std::to_string(inputs[1]) + ") is: " + std::to_string(outputLayer.returnNetworkValues(0)[0][0]) << std::endl;
 	}
 

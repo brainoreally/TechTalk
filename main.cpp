@@ -9,7 +9,8 @@ NetworkParams buildMNISTParams() {
     NetworkParams out = NetworkParams();
 
     out.kernel_source_path = "src/kernels/perceptron.cl";
-    std::vector<std::vector<int>> hiddenLayerParams = { { 18, 1 }, { 16, 1 }, { 14, 1 }, { 12, 1 } };
+    std::vector<std::vector<int>> hiddenLayerParams = { { 16, 1 }, { 14, 1 }, { 12, 1 } };
+    out.maxNeuronInFwd = 18;
     out.numSamples = 60000;
     out.numInputs = 784;
     out.layerSizes = { out.numInputs };
@@ -51,10 +52,9 @@ NetworkParams buildPerceptronParams() {
 
     out.kernel_source_path = "src/kernels/perceptron.cl";
     std::vector<std::vector<int>> hiddenLayerParams = { { 8, 0 }, { 4, 0 }, { 2, 0 }, };
-    out.maxNeuronInFwd = 8;
     out.numSamples = 4;
     out.numInputs = 2;
-    out.layerSizes = { 2 };
+    out.layerSizes = { out.numInputs };
     out.layerActivations = { 0 };
     out.numOutputs = 1;
 
@@ -64,11 +64,14 @@ NetworkParams buildPerceptronParams() {
     out.numWeights = 0;
     out.numLayers = 1;
 
+    out.maxNeuronInFwd = out.numOutputs;
+
     int previousLayerSize = out.numInputs;
     for (auto data : hiddenLayerParams)
     {
         LayerParams hiddenP = LayerParams(data[0], 1, 1);
-
+        if (data[0] > out.maxNeuronInFwd)
+            out.maxNeuronInFwd = data[0];
         out.hiddenLayerParams.push_back(hiddenP);
         out.layerSizes.push_back(data[0]);
         out.layerActivations.push_back(data[1]);
@@ -166,6 +169,7 @@ int main() {
         graphics.setupScene();
 
         graphics.drawNeurons(network.returnNetworkValues(), network.returnWeightValues(), network.returnBiasValues());
+
 
         graphics.swapBuffersAndPoll();
         

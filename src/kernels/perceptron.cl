@@ -56,11 +56,11 @@ __kernel void network_output(
 	if (networkCounts[6] % networkCounts[7] == 0) {
 		float loss = 0.0f;
 		int outputLayerOff = networkCounts[0] - networkCounts[4];
-		for (unsigned int sampleIter = 0; sampleIter < networkCounts[5]; sampleIter++)
+
+		for (unsigned int sampleIter = 0; sampleIter < networkCounts[8]; sampleIter++)
 			for (unsigned int neuronIter = 0; neuronIter < networkCounts[4]; neuronIter++)
 				loss += correctOutput[(sampleIter * networkCounts[4]) + neuronIter] - neuronValues[(sampleIter * networkCounts[0]) + outputLayerOff + neuronIter];
-		loss /= (networkCounts[5] * networkCounts[4]);
-
+		loss /= (networkCounts[8] * networkCounts[4]);
 
 		printf("Epoch: %i - Error: %f\n", networkCounts[6], loss);
 
@@ -75,10 +75,18 @@ __kernel void network_output(
 				layerOffset += layerSizes[layerIter];
 			}
 			printf("\n");
-
 		}
 	}
+	networkCounts[9] = 0;
 	--networkCounts[6];
+}
+
+__kernel void batch_output(
+	__global unsigned int* networkCounts
+)
+{
+	//printf("    Batch: %i\n", networkCounts[8]);
+	networkCounts[9] += networkCounts[8];
 }
 
 __kernel void forward_pass(
@@ -90,7 +98,7 @@ __kernel void forward_pass(
 	__global float* biases
 )
 {
-	const unsigned int sampleIndex = get_global_id(0) / get_local_size(0);
+	const unsigned int sampleIndex = (get_global_id(0) / get_local_size(0)) + networkCounts[9];
 	const unsigned int nSOff = sampleIndex * networkCounts[0];
 	const unsigned int neuronID = get_local_id(0);
 
@@ -126,7 +134,7 @@ __kernel void backward_pass(
 	__global float* weightDerivitiveOut
 )
 {
-	const unsigned int sampleIndex = get_global_id(0) / get_local_size(0);
+	const unsigned int sampleIndex = (get_global_id(0) / get_local_size(0)) + networkCounts[9];
 	const unsigned int nSOff = sampleIndex * networkCounts[0];
 	const unsigned int wSOff = sampleIndex * networkCounts[1];
 	const unsigned int neuronID = get_local_id(0);
@@ -135,6 +143,8 @@ __kernel void backward_pass(
 	
 	unsigned int layerOffset = layerSizes[0];
 	unsigned int weightOffset = 0;
+
+	float learningRate = 0.1f;
 
 	for (int iter = 1; iter < currentLayer; iter++) {
 		layerOffset += layerSizes[iter];
@@ -145,7 +155,10 @@ __kernel void backward_pass(
 	if (neuronID < layerSizes[currentLayer]) {
 		int nOff = nSOff + layerOffset + neuronID;
 
-		float loss = correctOutput[(sampleIndex * networkCounts[4]) + neuronID] - neuronValues[nOff];
+		float loss = 0.0f;
+		for (int iter = 0; iter < networkCounts[4]; iter++)
+			loss += correctOutput[(sampleIndex * networkCounts[4]) + iter] - neuronValues[nSOff + layerOffset + iter];
+		loss /= networkCounts[4];
 
 		if (layerActivations[currentLayer] == 0) {
 			weightDerivitiveOut[nOff] = loss * sigmoid_derivitive(neuronValues[nOff]);
@@ -188,7 +201,7 @@ __kernel void backward_pass(
 	}	
 
 	barrier(CLK_GLOBAL_MEM_FENCE);
-	
+
 	if (neuronID < networkCounts[0] && neuronID >= layerSizes[0] && sampleIndex == 0) {
 		unsigned int currentLayer = 1;
 		unsigned int sourceNeuronOffset = 0;
@@ -202,15 +215,14 @@ __kernel void backward_pass(
 			}
 		}
 
-		float learningRate = 0.01;
 		float avgChange = 0.0f;
-		for (int sampleIter = 0; sampleIter < networkCounts[5]; sampleIter++) {
+		for (int sampleIter = 0; sampleIter < networkCounts[8]; sampleIter++) {
 			int sampleOff = networkCounts[0] * sampleIter;
 			for(int neuronIter = 0; neuronIter < layerSizes[currentLayer - 1]; neuronIter++)
 				avgChange += weightDerivitiveOut[sampleOff + sourceNeuronOffset + neuronIter] * neuronValues[sampleOff + neuronID] * learningRate;
 		}
 
-		biases[neuronID] += avgChange / networkCounts[5];
+		biases[neuronID] += avgChange / networkCounts[8];
 	}
 
 	barrier(CLK_GLOBAL_MEM_FENCE);
@@ -234,9 +246,8 @@ __kernel void backward_pass(
 		sourceNeuronOffset += (weightID - lastTotal) % layerSizes[currentLayer - 1];
 		resultNeuronOffset += (weightID - lastTotal) / layerSizes[currentLayer - 1];
 
-		float learningRate = 0.01;
 		float avgChange = 0.0f;
-		for (int sampleIter = 0; sampleIter < networkCounts[5]; sampleIter++) {
+		for (int sampleIter = 0; sampleIter < networkCounts[8]; sampleIter++) {
 			int sampleOff = networkCounts[0] * sampleIter;
 			avgChange += weightDerivitiveOut[sampleOff + resultNeuronOffset] * neuronValues[sampleOff + sourceNeuronOffset] * learningRate;
 		}
