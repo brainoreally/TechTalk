@@ -13,11 +13,11 @@ public:
 	void setupScene();
 	void swapBuffersAndPoll();
 	bool is_running();
-	void drawNeurons(std::vector<std::vector<GLfloat>> neuronValues);
+	void drawNeurons(std::vector<std::vector<GLfloat>> neuronValues, std::vector<std::vector<GLfloat>> weights);
 private:
 	std::string loadShaderSource(const char* filename);
 	GLint resolutionX, resolutionY;
-	GLuint vertexShader, fragmentShader, shaderProgram;
+	GLuint neuronVertexShader, neuronFragmentShader, neuronShaderProgram;
 	GLint modelLoc, viewLoc, projectionLoc;
 	GLfloat cubePositionX;
 	GLFWwindow *window;

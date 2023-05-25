@@ -35,7 +35,7 @@ void Neuron::setupBuffers()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 }
 
-void Neuron::draw(glm::vec3 position, GLfloat value)
+void Neuron::draw(glm::vec3 position, GLfloat value, std::vector<glm::vec3> oldPositions, std::vector<GLfloat> weights)
 {
     // Set the model matrix
     glm::mat4 model = glm::mat4(1.0f);
@@ -48,6 +48,18 @@ void Neuron::draw(glm::vec3 position, GLfloat value)
     glBindVertexArray(VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glDrawElements(GL_TRIANGLE_STRIP, numIndices * 3, GL_UNSIGNED_INT, 0);
+
+
+    for (int i = 0; i < oldPositions.size(); i++) {
+        // Draw lines from old positions to the current position
+        changeWeightColour(weights[i]);
+        glUniform4fv(colourUniformLocation, 1, &colour[0]);
+        glBegin(GL_LINES);
+            // Set the line color for the connections
+            glVertex3f(position.x, position.y * 0.75f, position.z);
+            glVertex3f(oldPositions[i].x - position.x, oldPositions[i].y - position.y, oldPositions[i].z - position.z);
+        glEnd();
+    }
 }
 
 void Neuron::changeColour(GLfloat neuronValue)
@@ -59,6 +71,43 @@ void Neuron::changeColour(GLfloat neuronValue)
     }
     else {
         colour = glm::vec4({ 0.0f, 1.0f, 0.0f, 1.0f });
+    }
+}
+
+void Neuron::changeWeightColour(GLfloat weightValue)
+{
+    if (weightValue <= 0.1f) {
+        colour = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    }
+    else if (weightValue <= 0.2f) {
+        colour = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+    }
+    else if (weightValue <= 0.3f) {
+        colour = glm::vec4(1.0f, 0.5f, 0.0f, 1.0f);
+    }
+    else if (weightValue <= 0.4f) {
+        colour = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    }
+    else if (weightValue <= 0.5f) {
+        colour = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+    }
+    else if (weightValue <= 0.6f) {
+        colour = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
+    }
+    else if (weightValue <= 0.7f) {
+        colour = glm::vec4(0.5f, 0.0f, 1.0f, 1.0f);
+    }
+    else if (weightValue <= 0.8f) {
+        colour = glm::vec4(0.5f, 1.0f, 0.0f, 1.0f);
+    }
+    else if (weightValue <= 0.9f) {
+        colour = glm::vec4(0.0f, 0.5f, 1.0f, 1.0f);
+    }
+    else if (weightValue <= 1.0f) {
+        colour = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
+    }
+    else {
+        colour = glm::vec4({ 0.6234f * weightValue, 0.0f, 1.0f * weightValue, 1.0f });
     }
 }
 

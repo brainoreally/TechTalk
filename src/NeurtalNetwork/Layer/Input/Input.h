@@ -38,4 +38,12 @@ public:
 	void finishLayerSetup() override {
 
 	}
+
+	std::vector<std::vector<Datatype>> returnWeightValues() override { 
+		return this->nextLayer->returnWeightValues(); 
+	}
+	
+	std::vector<std::vector<Datatype>> returnBiasValues() override {
+		return this->nextLayer->returnBiasValues();
+	}
 };

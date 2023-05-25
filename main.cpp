@@ -146,8 +146,8 @@ int main() {
     std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> trainingData = loadMNISTData();
     */
 
-    GLuint iterations = 1000000;
-    network.train(trainingData, iterations, iterations / 100);
+    GLuint iterations = 200000;
+    network.train(trainingData, iterations, iterations / 10);
 
     int iter = 0;
     auto last_prediction_time = std::chrono::high_resolution_clock::now();  // initialize timer
@@ -165,7 +165,7 @@ int main() {
         
         graphics.setupScene();
 
-        graphics.drawNeurons(network.returnNetworkValues());
+        graphics.drawNeurons(network.returnNetworkValues(), network.returnWeightValues());
 
         graphics.swapBuffersAndPoll();
         

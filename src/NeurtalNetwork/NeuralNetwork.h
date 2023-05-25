@@ -107,9 +107,9 @@ public:
 
 		while (cyclesLeft > 0 && !earlyEnd) {
 			--cyclesLeft;
-			CLProgram::queueKernel("network_output", 1, 1);
 			CLProgram::queueKernel("forward_pass", numSamples * maxNeuronInFwd, maxNeuronInFwd);
 			CLProgram::queueKernel("backward_pass", numSamples * numNeurons, numNeurons);
+			CLProgram::queueKernel("network_output", 1, 1);
 		}
 		// If we fail to set this the cleanup code for this class can hang.
 		training = false;
@@ -151,6 +151,14 @@ public:
 		out.push_back(CLProgram::readBuffer<Datatype>("correctOutput", offset * outputLayer.numNeuronValues(), outputLayer.numNeuronValues()));
 
 		return out;
+	}
+
+	std::vector<std::vector<Datatype>> returnWeightValues() {
+		return inputLayer.returnWeightValues();
+	}
+
+	std::vector<std::vector<Datatype>> returnBiasValues() {
+		return inputLayer.returnBiasValues();
 	}
 
 	bool training;

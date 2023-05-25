@@ -22,6 +22,8 @@ public:
 	}
 
 	virtual std::vector<std::vector<Datatype>> returnNetworkValues(unsigned int offset) { return { {} }; }
+	virtual std::vector<std::vector<Datatype>> returnWeightValues() { return { {} }; }
+	virtual std::vector<std::vector<Datatype>> returnBiasValues() { return { {} }; }
 
 	virtual unsigned int getNeuronValueOffset() {
 		int offset = numNeuronValues();
@@ -30,7 +32,7 @@ public:
 	}
 
 	virtual unsigned int getWeightsOffset() {
-		int offset = numWeights() * sizeof(float);
+		int offset = numWeights();
 		offset += previousLayer->getWeightsOffset();
 		return offset;
 	}
@@ -65,7 +67,7 @@ public:
 			biases.push_back(1.0f);
 		}
 
-		CLProgram::writeBuffer<Datatype>("weights", previousLayer->getWeightsOffset(), weights);
+		CLProgram::writeBuffer<Datatype>("weights", previousLayer->getWeightsOffset() * sizeof(Datatype), weights);
 		CLProgram::writeBuffer<Datatype>("biases", previousLayer->getNeuronValueOffset(), biases);
 		numWeightedValGlobal = numWeights();
 		previousLayer->finishLayerSetup();

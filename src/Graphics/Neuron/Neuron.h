@@ -23,8 +23,9 @@ struct objectMeshData {
 class Neuron
 {
 public:
-	static void draw(glm::vec3 position, GLfloat value);
+	static void draw(glm::vec3 position, GLfloat value, std::vector<glm::vec3> oldPositions, std::vector<GLfloat> weights);
 	static void changeColour(GLfloat neuronValue);
+	static void changeWeightColour(GLfloat weightValue);
 
 	static GLuint colourUniformLocation;
 	static GLuint modelUniformLocation;

@@ -43,45 +43,49 @@ Graphics::Graphics() {
 
     // Compile and link the shader program
     std::string vertexSourceCode = loadShaderSource("src/shaders/vertex.glsl");
-    const GLchar* vertexShaderSource = vertexSourceCode.c_str();
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
+    const GLchar* neuronVertexShaderSource = vertexSourceCode.c_str();
+    neuronVertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(neuronVertexShader, 1, &neuronVertexShaderSource, NULL);
+    glCompileShader(neuronVertexShader);
 
-    std::string fragmentShaderCode = loadShaderSource("src/shaders/fragment.glsl");
-    const GLchar* fragmentShaderSource = fragmentShaderCode.c_str();
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
+    std::string neuronFragmentShaderCode = loadShaderSource("src/shaders/fragment.glsl");
+    const GLchar* neuronFragmentShaderSource = neuronFragmentShaderCode.c_str();
+    neuronFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(neuronFragmentShader, 1, &neuronFragmentShaderSource, NULL);
+    glCompileShader(neuronFragmentShader);
 
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
+    neuronShaderProgram = glCreateProgram();
+    glAttachShader(neuronShaderProgram, neuronVertexShader);
+    glAttachShader(neuronShaderProgram, neuronFragmentShader);
+    glLinkProgram(neuronShaderProgram);
 
     // Check if the linking was successful
     GLint linkStatus;
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linkStatus);
+    glGetProgramiv(neuronShaderProgram, GL_LINK_STATUS, &linkStatus);
     if (linkStatus != GL_TRUE) {
         // Linking failed, get the error message
         GLint infoLogLength;
-        glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &infoLogLength);
+        glGetProgramiv(neuronShaderProgram, GL_INFO_LOG_LENGTH, &infoLogLength);
         char* infoLog = new char[infoLogLength];
-        glGetProgramInfoLog(shaderProgram, infoLogLength, NULL, infoLog);
+        glGetProgramInfoLog(neuronShaderProgram, infoLogLength, NULL, infoLog);
         std::cerr << "Shader program linking failed: " << infoLog << std::endl;
         delete[] infoLog;
         exit(EXIT_FAILURE);
     }
 
     // delete shaders
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    glDeleteShader(neuronVertexShader);
+    glDeleteShader(neuronFragmentShader);
 
     // Set up the uniform locations
-    Neuron::modelUniformLocation = glGetUniformLocation(shaderProgram, "model");
-    Neuron::colourUniformLocation = glGetUniformLocation(shaderProgram, "colour");
-    viewLoc = glGetUniformLocation(shaderProgram, "view");
-    projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+    Neuron::modelUniformLocation = glGetUniformLocation(neuronShaderProgram, "model");
+    Neuron::colourUniformLocation = glGetUniformLocation(neuronShaderProgram, "colour");
+    viewLoc = glGetUniformLocation(neuronShaderProgram, "view");
+    projectionLoc = glGetUniformLocation(neuronShaderProgram, "projection");
+
+    glEnable(GL_DEPTH_TEST);  // Enable depth testing
+
+    glDepthFunc(GL_LESS);  // Set depth function to GL_LESS
 
     Neuron::setupBuffers();
  }
@@ -90,7 +94,7 @@ Graphics::~Graphics() {
     // Disable vertex attribute array
     glDisableVertexAttribArray(0);
     glUseProgram(0);
-    glDeleteProgram(shaderProgram);
+    glDeleteProgram(neuronShaderProgram);
     glfwTerminate();
 }
 
@@ -108,7 +112,7 @@ void Graphics::setupScene() {
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
     // Activate the shader program
-    glUseProgram(shaderProgram);
+    glUseProgram(neuronShaderProgram);
 }
 
 void Graphics::swapBuffersAndPoll(){
@@ -121,7 +125,7 @@ bool Graphics::is_running() {
     return !glfwWindowShouldClose(window);
 }
 
-void Graphics::drawNeurons(std::vector<std::vector<GLfloat>> networkValues)
+void Graphics::drawNeurons(std::vector<std::vector<GLfloat>> networkValues, std::vector<std::vector<GLfloat>> weights)
 {
     GLfloat xPos = networkValues.size() * -0.75f;
     GLfloat zPos = networkValues.size() * -2.0f;
@@ -134,30 +138,42 @@ void Graphics::drawNeurons(std::vector<std::vector<GLfloat>> networkValues)
             GLfloat zOff = -50.0f;
             for (int x = 0; x < 28; x++) {
 
-                Neuron::draw(glm::vec3(xOff, yPos, zPos + zOff), networkValues[0][iter]);
+                Neuron::draw(glm::vec3(xOff, yPos, zPos + zOff), networkValues[0][iter], {}, {});
                 xOff += 1.5f;
                 ++iter;
             }
         }
     }
 
-    for (int i = networkValues[0].size() == 28 * 28; i < networkValues.size() - 1; i++) {
-        GLfloat yPos = networkValues[i].size() * -0.75f;
+    std::vector<glm::vec3> oldPositions = {};
+    std::vector<glm::vec3> newPositions = {};
+    for (int i = 0; i < networkValues.size() - 1; i++) {
+        GLfloat yPos = networkValues[i].size() * -1.0f;
+        oldPositions = newPositions;
+        newPositions = {};
+
+        std::vector<GLfloat> weightVals = {};
+        if (i > 0)
+            weightVals = weights[i - 1];
+
         for (GLfloat neuronValue : networkValues[i]) {
-            Neuron::draw(glm::vec3(xPos, yPos, zPos), neuronValue);
-            yPos += 1.5f;
+            glm::vec3 pos = glm::vec3(xPos, yPos, zPos);
+            newPositions.push_back(pos);
+            Neuron::draw(pos, neuronValue, oldPositions, weightVals);
+
+            yPos += 2.0f;
         }
-        xPos += 1.5f;
+        xPos += 2.0f;
     }
 
-    xPos += 1.5f;
-    zPos = -1.0f;
+    xPos = 6.0f;
+    zPos = -2.0f;
     GLfloat yPos = networkValues[networkValues.size() - 1].size() * -0.75f;
     for (GLfloat neuronValue : networkValues[networkValues.size() - 1]) {
-        Neuron::draw(glm::vec3(xPos, yPos, zPos), neuronValue);
-        yPos += 1.5f;
+        Neuron::draw(glm::vec3(xPos, yPos, zPos), neuronValue, {}, {});
+        yPos += 2.0f;
     }
-    xPos += 1.5f;
+    xPos += 2.0f;
 }
 
 std::string Graphics::loadShaderSource(const char* filename)
