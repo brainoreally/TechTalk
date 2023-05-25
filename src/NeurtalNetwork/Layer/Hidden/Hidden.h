@@ -31,10 +31,12 @@ public:
 		returnValues.insert(returnValues.end(), nextLayerValues.begin(), nextLayerValues.end());
 		return returnValues;
 	}
-	/*
+
 	std::vector<std::vector<Datatype>> returnBiasValues() override {
 		std::vector<std::vector<Datatype>> returnValues;
 		returnValues.push_back(CLProgram::readBuffer<float>("biases", this->previousLayer->getNeuronValueOffset(), this->numNeurons));
-		return returnValues.push_back(this->nextLayer->returnBiasValues());
-	}*/
+		std::vector<std::vector<Datatype>> nextLayerValues = this->nextLayer->returnBiasValues();
+		returnValues.insert(returnValues.end(), nextLayerValues.begin(), nextLayerValues.end());
+		return returnValues;
+	}
 };

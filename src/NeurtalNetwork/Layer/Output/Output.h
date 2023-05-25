@@ -26,10 +26,10 @@ public:
 		out.push_back(CLProgram::readBuffer<float>("weights", this->previousLayer->getWeightsOffset(), this->numWeights()));
 		return out;
 	}
-	/*
+
 	std::vector<std::vector<Datatype>> returnBiasValues() override {
 		std::vector<std::vector<Datatype>> out = {};
 		out.push_back(CLProgram::readBuffer<float>("biases", this->previousLayer->getNeuronValueOffset(), this->numNeurons));
 		return out;
-	}*/
+	}
 };

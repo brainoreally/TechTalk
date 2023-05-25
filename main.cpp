@@ -165,7 +165,7 @@ int main() {
         
         graphics.setupScene();
 
-        graphics.drawNeurons(network.returnNetworkValues(), network.returnWeightValues());
+        graphics.drawNeurons(network.returnNetworkValues(), network.returnWeightValues(), network.returnBiasValues());
 
         graphics.swapBuffersAndPoll();
         

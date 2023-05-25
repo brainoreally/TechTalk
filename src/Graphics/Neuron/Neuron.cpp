@@ -35,7 +35,7 @@ void Neuron::setupBuffers()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 }
 
-void Neuron::draw(glm::vec3 position, GLfloat value, std::vector<glm::vec3> oldPositions, std::vector<GLfloat> weights)
+void Neuron::draw(glm::vec3 position, GLfloat value, GLfloat bias, std::vector<glm::vec3> oldPositions, std::vector<GLfloat> weights)
 {
     // Set the model matrix
     glm::mat4 model = glm::mat4(1.0f);
@@ -49,17 +49,31 @@ void Neuron::draw(glm::vec3 position, GLfloat value, std::vector<glm::vec3> oldP
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glDrawElements(GL_TRIANGLE_STRIP, numIndices * 3, GL_UNSIGNED_INT, 0);
 
-
     for (int i = 0; i < oldPositions.size(); i++) {
         // Draw lines from old positions to the current position
         changeWeightColour(weights[i]);
         glUniform4fv(colourUniformLocation, 1, &colour[0]);
         glBegin(GL_LINES);
-            // Set the line color for the connections
-            glVertex3f(position.x, position.y * 0.75f, position.z);
-            glVertex3f(oldPositions[i].x - position.x, oldPositions[i].y - position.y, oldPositions[i].z - position.z);
+        // Set the line color for the connections
+        glVertex3f(position.x, position.y * 0.75f, position.z);
+        glVertex3f(oldPositions[i].x - position.x, oldPositions[i].y - position.y, oldPositions[i].z - position.z);
         glEnd();
     }
+
+    if (weights.size() > 0) {
+        // Set the model matrix
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, position + glm::vec3(10.0f, 10.0f, -10.0f));
+        changeBiasColour(bias);
+        glUniform4fv(colourUniformLocation, 1, &colour[0]);
+        glUniformMatrix4fv(modelUniformLocation, 1, GL_FALSE, glm::value_ptr(model));
+
+        // Bind the VAO and EBO and draw the sphere
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glDrawElements(GL_TRIANGLE_STRIP, numIndices * 3, GL_UNSIGNED_INT, 0);
+    }
+
 }
 
 void Neuron::changeColour(GLfloat neuronValue)
@@ -108,6 +122,43 @@ void Neuron::changeWeightColour(GLfloat weightValue)
     }
     else {
         colour = glm::vec4({ 0.6234f * weightValue, 0.0f, 1.0f * weightValue, 1.0f });
+    }
+}
+
+void Neuron::changeBiasColour(GLfloat biasValue)
+{
+    if (biasValue <= -1.6f) {
+        colour = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    }
+    else if (biasValue <= -1.2f) {
+        colour = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+    }
+    else if (biasValue <= -0.8f) {
+        colour = glm::vec4(1.0f, 0.5f, 0.0f, 1.0f);
+    }
+    else if (biasValue <= -0.4f) {
+        colour = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    }
+    else if (biasValue <= -0.35f) {
+        colour = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+    }
+    else if (biasValue <= -0.33f) {
+        colour = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
+    }
+    else if (biasValue <= -0.3f) {
+        colour = glm::vec4(0.5f, 0.0f, 1.0f, 1.0f);
+    }
+    else if (biasValue <= -0.25f) {
+        colour = glm::vec4(0.5f, 1.0f, 0.0f, 1.0f);
+    }
+    else if (biasValue <= 1.6f) {
+        colour = glm::vec4(0.0f, 0.5f, 1.0f, 1.0f);
+    }
+    else if (biasValue <= 2.0f) {
+        colour = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
+    }
+    else {
+        colour = glm::vec4({ 0.6234f * biasValue, 0.0f, 1.0f * biasValue, 1.0f });
     }
 }
 

@@ -125,7 +125,7 @@ bool Graphics::is_running() {
     return !glfwWindowShouldClose(window);
 }
 
-void Graphics::drawNeurons(std::vector<std::vector<GLfloat>> networkValues, std::vector<std::vector<GLfloat>> weights)
+void Graphics::drawNeurons(std::vector<std::vector<GLfloat>> networkValues, std::vector<std::vector<GLfloat>> weights, std::vector<std::vector<GLfloat>> biases)
 {
     GLfloat xPos = networkValues.size() * -0.75f;
     GLfloat zPos = networkValues.size() * -2.0f;
@@ -138,7 +138,7 @@ void Graphics::drawNeurons(std::vector<std::vector<GLfloat>> networkValues, std:
             GLfloat zOff = -50.0f;
             for (int x = 0; x < 28; x++) {
 
-                Neuron::draw(glm::vec3(xOff, yPos, zPos + zOff), networkValues[0][iter], {}, {});
+                Neuron::draw(glm::vec3(xOff, yPos, zPos + zOff), networkValues[0][iter], 0, {}, {});
                 xOff += 1.5f;
                 ++iter;
             }
@@ -153,13 +153,18 @@ void Graphics::drawNeurons(std::vector<std::vector<GLfloat>> networkValues, std:
         newPositions = {};
 
         std::vector<GLfloat> weightVals = {};
-        if (i > 0)
+        std::vector<GLfloat> biasVals = {};
+        if (i > 0) {
             weightVals = weights[i - 1];
-
-        for (GLfloat neuronValue : networkValues[i]) {
+            biasVals = biases[i - 1];
+        }
+        for (int neuronIter = 0; neuronIter < networkValues[i].size() - 1; neuronIter++) {
             glm::vec3 pos = glm::vec3(xPos, yPos, zPos);
             newPositions.push_back(pos);
-            Neuron::draw(pos, neuronValue, oldPositions, weightVals);
+            int bias = 0;
+            if (i > 0)
+                bias = biasVals[neuronIter];
+            Neuron::draw(pos, networkValues[i][neuronIter], bias, oldPositions, weightVals);
 
             yPos += 2.0f;
         }
@@ -170,7 +175,7 @@ void Graphics::drawNeurons(std::vector<std::vector<GLfloat>> networkValues, std:
     zPos = -2.0f;
     GLfloat yPos = networkValues[networkValues.size() - 1].size() * -0.75f;
     for (GLfloat neuronValue : networkValues[networkValues.size() - 1]) {
-        Neuron::draw(glm::vec3(xPos, yPos, zPos), neuronValue, {}, {});
+        Neuron::draw(glm::vec3(xPos, yPos, zPos), neuronValue, 0, {}, {});
         yPos += 2.0f;
     }
     xPos += 2.0f;
