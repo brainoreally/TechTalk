@@ -94,10 +94,11 @@ public:
 		for (std::vector<Datatype> sampleInput : trainingData.first) {
 			if (iter < numSamples) {
 				iter++;
-				CLProgram::writeBuffer<float>("neuronValues", offset, sampleInput);
-				offset += numNeurons * sizeof(float);
+				offset = CLProgram::writeBuffer<float>("neuronValues", offset, sampleInput);
+				offset += (numNeurons - sampleInput.size()) * sizeof(float);
 			}
 		}
+		auto test = CLProgram::readBuffer<float>("neuronValues", 0, numNeurons * numSamples);
 		CLProgram::writeBuffer<float>("correctOutput", 0, trainingData.second);
 		
 		std::vector<float> zeroF = {};
@@ -136,11 +137,10 @@ public:
 	}
 
 	void predict(std::vector<Datatype> inputs, std::vector<Datatype> expectedResult) {
-		CLProgram::writeBuffer<float>("neuronValues", 0, inputs);
-		CLProgram::writeBuffer<float>("correctOutput", 0, expectedResult);
+		CLProgram::writeBuffer<Datatype>("neuronValues", 0, inputs);
+		CLProgram::writeBuffer<Datatype>("correctOutput", 0, expectedResult);
 		CLProgram::writeBuffer<unsigned int>("networkCounts", 9 * sizeof(unsigned int), 0);
 		CLProgram::queueKernel("forward_pass", maxNeuronInFwd, maxNeuronInFwd);
-		auto test = CLProgram::readBuffer<float>("neuronValues", 0, numNeurons);
 		std::cout << "Output for values (" + std::to_string(inputs[0]) + ", " + std::to_string(inputs[1]) + ") is: " + std::to_string(outputLayer.returnNetworkValues(0)[0][0]) << std::endl;
 	}
 

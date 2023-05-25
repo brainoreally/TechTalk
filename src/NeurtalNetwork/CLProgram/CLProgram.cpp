@@ -90,6 +90,8 @@ void CLProgram::queueKernel(const char* kernel_key, size_t global, size_t local)
     // Wait for the kernel to complete
     clWaitForEvents(1, &kernel_event);
 
+    if (err != 0)
+        int test = 1;
     // Release the event object
     clReleaseEvent(kernel_event);
 }
@@ -121,7 +123,7 @@ void CLProgram::setupNetworkOpenCL(NetworkParams* params) {
     createBuffer<float>("weightDerivitiveOut", params->numNeurons * params->numSamples); // float collection - #values with a weight (inputs on layers + bias) - store all weights in network/layers
 
     std::vector<KernelParam> network_kernels = {
-        { "network_output", { "networkCounts", "layerSizes", "correctOutput", "neuronValues" }},
+        { "network_output", { "networkCounts", "layerSizes", "correctOutput", "neuronValues", "weights", "biases" }},
         { "batch_output", { "networkCounts" }},
         { "forward_pass", { "networkCounts", "layerSizes", "layerActivations", "neuronValues", "weights", "biases" }},
         { "backward_pass", { "networkCounts", "layerSizes", "layerActivations", "correctOutput", "neuronValues", "weights", "biases", "weightDerivitiveOut" }},

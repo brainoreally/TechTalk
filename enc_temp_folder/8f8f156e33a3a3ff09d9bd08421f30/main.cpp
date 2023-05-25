@@ -9,7 +9,7 @@ NetworkParams buildMNISTParams() {
     NetworkParams out = NetworkParams();
 
     out.kernel_source_path = "src/kernels/perceptron.cl";
-    std::vector<std::vector<int>> hiddenLayerParams = { { 16, 1 }, { 14, 0 }, { 12, 0 } };
+    std::vector<std::vector<int>> hiddenLayerParams = { { 16, 1 }, { 14, 1 }, { 12, 1 } };
     out.maxNeuronInFwd = 18;
     out.numSamples = 60000;
     out.numInputs = 784;

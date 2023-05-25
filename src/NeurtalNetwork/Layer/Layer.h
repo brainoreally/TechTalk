@@ -68,7 +68,7 @@ public:
 		}
 
 		CLProgram::writeBuffer<Datatype>("weights", previousLayer->getWeightsOffset() * sizeof(Datatype), weights);
-		CLProgram::writeBuffer<Datatype>("biases", previousLayer->getNeuronValueOffset(), biases);
+		CLProgram::writeBuffer<Datatype>("biases", previousLayer->getNeuronValueOffset() * sizeof(Datatype), biases);
 		numWeightedValGlobal = numWeights();
 		previousLayer->finishLayerSetup();
 	}
