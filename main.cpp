@@ -36,7 +36,7 @@ std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> load
 
 int main() {
     Graphics graphics = Graphics();
-
+    
     std::vector<std::vector<float>> inputs = {
             { 0.0f, 0.0f },
             { 1.0f, 0.0f },
@@ -63,13 +63,22 @@ int main() {
     float learningRate = 1.0f;
     NeuralNetwork<float> network = NeuralNetwork<float>(perceptronNetworkParams);
     std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> trainingData = std::make_pair(inputs, outputs);
-
+    
     /*
-    NetworkParams mnistNetworkParams = buildMNISTParams();
-    NeuralNetwork<float> network = NeuralNetwork<float>(mnistNetworkParams);
     std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> trainingData = loadMNISTData();
-    */
+    NetworkParams mnistNetworkParams = NetworkParams(
+        "src/kernels/perceptron.cl",
+        trainingData.first[0].size(),
+        trainingData.second[0].size(),
+        0,
+        { { 0, { 16, 16, 16, 16, } }, },
+        trainingData.first.size()
+    );
+    NeuralNetwork<float> network = NeuralNetwork<float>(mnistNetworkParams);
 
+    int batchSize = 2000;
+    int learningRate = 1.0f;
+    */
     GLuint iterations = 50000;
     network.train(trainingData, iterations, iterations / 10, batchSize, learningRate);
 

@@ -235,8 +235,7 @@ __kernel void train_biases(
 	__global float* weightDerivitiveOut
 )
 {
-	const unsigned int biasID = get_global_id(0);
-	if (biasID < networkCounts[0] && biasID >= networkCounts[3]) {
+	for (unsigned int biasID = networkCounts[3]; biasID < networkCounts[0]; biasID++) {
 		unsigned int currentLayer = 1;
 		unsigned int sourceNeuronOffset = 0;
 		unsigned int lastTotal = layerSizes[0];
@@ -271,9 +270,7 @@ __kernel void train_weights(
 	__global float* weightDerivitiveOut
 )
 {
-	const unsigned int weightID = get_global_id(0);
-	
-	if (weightID < networkCounts[1]) {
+	for (unsigned int weightID = 0; weightID < networkCounts[1]; weightID++) {
 		unsigned int currentLayer = 1;
 		unsigned int sourceNeuronOffset = 0;
 		unsigned int resultNeuronOffset = layerSizes[0];

@@ -114,8 +114,8 @@ public:
 			for (int batch = 0; batch < (numSamples / batchSize); batch++) {
 				CLProgram::queueKernel("forward_pass", batchSize * maxNeuronInFwd, maxNeuronInFwd);
 				CLProgram::queueKernel("backward_pass", batchSize * maxNeuronInFwd, maxNeuronInFwd);
-				CLProgram::queueKernel("train_weights", numWeights, numWeights);
-				CLProgram::queueKernel("train_biases", numNeurons, numNeurons);
+				CLProgram::queueKernel("train_weights", 1, 1);
+				CLProgram::queueKernel("train_biases", 1, 1);
 				CLProgram::queueKernel("batch_output", 1, 1);
 			}
 			CLProgram::queueKernel("network_output", 1, 1);
