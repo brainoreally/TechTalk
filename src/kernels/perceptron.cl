@@ -167,7 +167,7 @@ __kernel void backward_pass(
 	const unsigned int neuronID = get_local_id(0);
 
 	unsigned int currentLayer = networkCounts[2] - 1;
-	
+
 	unsigned int layerOffset = layerSizes[0];
 	unsigned int weightOffset = 0;
 
@@ -223,10 +223,18 @@ __kernel void backward_pass(
 
 		oldWeightOff = weightOffset;
 		weightOffset -= layerSizes[currentLayer] * layerSizes[currentLayer - 1];
-	}	
+	}
+}
 
-	barrier(CLK_GLOBAL_MEM_FENCE);
-
+__kernel void train_biases(
+	__global unsigned int* networkCounts,
+	__global unsigned int* layerSizes,
+	__global float* learningRate,
+	__global float* neuronValues,
+	__global float* biases,
+	__global float* weightDerivitiveOut
+)
+{
 	const unsigned int biasID = get_global_id(0);
 	if (biasID < networkCounts[0] && biasID >= networkCounts[3]) {
 		unsigned int currentLayer = 1;
@@ -252,9 +260,17 @@ __kernel void backward_pass(
 		//printf("avgChange: %f\n", avgChange);
 		biases[biasID] += avgChange / networkCounts[8];
 	}
+}
 
-	barrier(CLK_GLOBAL_MEM_FENCE);
-
+__kernel void train_weights(
+	__global unsigned int* networkCounts,
+	__global unsigned int* layerSizes,
+	__global float* learningRate,
+	__global float* neuronValues,
+	__global float* weights,
+	__global float* weightDerivitiveOut
+)
+{
 	const unsigned int weightID = get_global_id(0);
 	
 	if (weightID < networkCounts[1]) {

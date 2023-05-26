@@ -56,7 +56,7 @@ int main() {
         inputs[0].size(),
         outputs[0].size(),
         0,
-        { { 1, { 4, 3 } } },
+        { { 0, { 4, 4, } }, },
         inputs.size()
     );
     int batchSize = 4;
@@ -69,7 +69,8 @@ int main() {
     NeuralNetwork<float> network = NeuralNetwork<float>(mnistNetworkParams);
     std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> trainingData = loadMNISTData();
     */
-    GLuint iterations = 10000;
+
+    GLuint iterations = 50000;
     network.train(trainingData, iterations, iterations / 10, batchSize, learningRate);
 
     int iter = 0;

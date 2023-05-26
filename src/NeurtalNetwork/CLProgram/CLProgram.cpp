@@ -128,6 +128,8 @@ void CLProgram::setupNetworkOpenCL(NetworkParams* params) {
         { "batch_output", { "networkCounts" }},
         { "forward_pass", { "networkCounts", "layerSizes", "layerActivations", "neuronValues", "weights", "biases" }},
         { "backward_pass", { "networkCounts", "layerSizes", "layerActivations", "learningRate", "correctOutput", "neuronValues", "weights", "biases", "weightDerivitiveOut" }},
+        { "train_biases", { "networkCounts", "layerSizes", "learningRate", "neuronValues", "biases", "weightDerivitiveOut" }},
+        { "train_weights", { "networkCounts", "layerSizes", "learningRate", "neuronValues", "weights", "weightDerivitiveOut" }},
     };
     for (KernelParam param : network_kernels)
     {
