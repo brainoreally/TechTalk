@@ -83,7 +83,7 @@ public:
 	}
 
 
-	void learn(std::pair<std::vector<std::vector<Datatype>>, std::vector<std::vector<float>>>  trainingData) {
+	void learn(std::pair<std::vector<std::vector<Datatype>>, std::vector<std::vector<float>>>  trainingData, int batchSize) {
 		if (epoch < 1)
 			epoch = 1;
 
@@ -105,7 +105,7 @@ public:
 
 		for (int i = 0; i < numNeurons * numSamples; i++)
 			zeroF.push_back(0.0f);
-		int batchSize = numSamples;
+
 		CLProgram::writeBuffer<unsigned int>("networkCounts", 8 * sizeof(unsigned int), batchSize);
 		CLProgram::writeBuffer<unsigned int>("networkCounts", 9 * sizeof(unsigned int), 0);
 
@@ -113,8 +113,8 @@ public:
 			--cyclesLeft;
 			for (int batch = 0; batch < (numSamples / batchSize); batch++) {
 				CLProgram::queueKernel("forward_pass", batchSize * maxNeuronInFwd, maxNeuronInFwd);
-				CLProgram::queueKernel("backward_pass", batchSize * numWeights, numWeights);
-				//CLProgram::queueKernel("batch_output", 1, 1);
+				CLProgram::queueKernel("backward_pass", batchSize * maxNeuronInFwd, maxNeuronInFwd);
+				CLProgram::queueKernel("batch_output", 1, 1);
 			}
 			CLProgram::queueKernel("network_output", 1, 1);
 		}
@@ -122,16 +122,17 @@ public:
 		training = false;
 	}
 
-	void train(std::pair<std::vector<std::vector<Datatype>>, std::vector<std::vector<float>>>  trainingData, uint32_t cycles, uint32_t epoc) {
+	void train(std::pair<std::vector<std::vector<Datatype>>, std::vector<std::vector<float>>>  trainingData, uint32_t cycles, uint32_t epoc, int batchSize, float learningRate) {
 		cyclesLeft = cycles;
 		epoch = epoc;
 
 		CLProgram::writeBuffer<unsigned int>("networkCounts", 6 * sizeof(unsigned int), cycles);
 		CLProgram::writeBuffer<unsigned int>("networkCounts", 7 * sizeof(unsigned int), epoc);
+		CLProgram::writeBuffer<float>("learningRate", 0, learningRate);
 
 		if (!training && cyclesLeft > 0) {
 			training = true;
-			std::thread training_thread(&NeuralNetwork<Datatype>::learn, this, trainingData);
+			std::thread training_thread(&NeuralNetwork<Datatype>::learn, this, trainingData, batchSize);
 			training_thread.detach();
 		}
 	}

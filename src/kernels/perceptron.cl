@@ -111,7 +111,7 @@ __kernel void batch_output(
 	__global unsigned int* networkCounts
 )
 {
-	//printf("    Batch: %i\n", networkCounts[8]);
+	//printf("    Batch#: %i\n", networkCounts[9] / networkCounts[8]);
 	networkCounts[9] += networkCounts[8];
 }
 
@@ -153,6 +153,7 @@ __kernel void backward_pass(
 	__global unsigned int* networkCounts,
 	__global unsigned int* layerSizes,
 	__global unsigned int* layerActivations,
+	__global float* learningRate,
 	__global float* correctOutput,
 	__global float* neuronValues,
 	__global float* weights,
@@ -169,8 +170,6 @@ __kernel void backward_pass(
 	
 	unsigned int layerOffset = layerSizes[0];
 	unsigned int weightOffset = 0;
-
-	float learningRate = 0.1f;
 
 	for (int iter = 1; iter < currentLayer; iter++) {
 		layerOffset += layerSizes[iter];
@@ -247,7 +246,7 @@ __kernel void backward_pass(
 			int sampleOff = networkCounts[0] * sampleIter;
 			for (int neuronIter = 0; neuronIter < layerSizes[currentLayer - 1]; neuronIter++) {
 				//printf("biasID: %i, index: %i, weightDerivitiveOut: %f,  nindex: %i, nVal: %f\n", biasID, sampleOff + sourceNeuronOffset + neuronIter, weightDerivitiveOut[sampleOff + sourceNeuronOffset + neuronIter], sampleOff + biasID, neuronValues[sampleOff + biasID]);
-				avgChange += weightDerivitiveOut[sampleOff + sourceNeuronOffset + neuronIter] * neuronValues[sampleOff + biasID] * learningRate;
+				avgChange += weightDerivitiveOut[sampleOff + sourceNeuronOffset + neuronIter] * neuronValues[sampleOff + biasID] * learningRate[0];
 			}
 		}
 		//printf("avgChange: %f\n", avgChange);
@@ -278,7 +277,7 @@ __kernel void backward_pass(
 		float avgChange = 0.0f;
 		for (int sampleIter = 0; sampleIter < networkCounts[8]; sampleIter++) {
 			int sampleOff = networkCounts[0] * sampleIter;
-			avgChange += weightDerivitiveOut[sampleOff + resultNeuronOffset] * neuronValues[sampleOff + sourceNeuronOffset] * learningRate;
+			avgChange += weightDerivitiveOut[sampleOff + resultNeuronOffset] * neuronValues[sampleOff + sourceNeuronOffset] * learningRate[0];
 			//printf("sourceNeuronOffset: %i, sampleOff: %i, neuronValues: %f\n", sourceNeuronOffset, sampleOff, neuronValues[sampleOff + sourceNeuronOffset]);
 		}
 

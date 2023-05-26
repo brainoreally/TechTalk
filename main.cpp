@@ -5,93 +5,6 @@
 #include "src/MNISTLoader/MNISTLoader.h"
 #include "src/NeurtalNetwork/CLProgram/CLProgram.h"
 
-NetworkParams buildMNISTParams() {
-    NetworkParams out = NetworkParams();
-
-    out.kernel_source_path = "src/kernels/perceptron.cl";
-    std::vector<std::vector<int>> hiddenLayerParams = { { 16, 1 }, { 14, 0 }, { 12, 0 } };
-    out.maxNeuronInFwd = 18;
-    out.numSamples = 60000;
-    out.numInputs = 784;
-    out.layerSizes = { out.numInputs };
-    out.layerActivations = { 0 };
-    out.numOutputs = 10;
-
-    out.inputLayerParams = LayerParams(out.numInputs, 1, 1);
-
-    out.numNeurons = out.numInputs;
-    out.numWeights = 0;
-    out.numLayers = 1;
-
-    int previousLayerSize = out.numInputs;
-    for (auto data : hiddenLayerParams)
-    {
-        LayerParams hiddenP = LayerParams(data[0], 1, 1);
-
-        out.hiddenLayerParams.push_back(hiddenP);
-        out.layerSizes.push_back(data[0]);
-        out.layerActivations.push_back(data[1]);
-
-        out.numNeurons += data[0];
-        out.numWeights += data[0] * previousLayerSize;
-        ++out.numLayers;
-        previousLayerSize = data[0];
-    }
-
-    ++out.numLayers;
-    out.layerSizes.push_back(out.numOutputs);
-    out.numWeights += out.numOutputs * previousLayerSize;
-    out.numNeurons += out.numOutputs;
-    out.outputLayerParams = LayerParams(out.numOutputs, 1, 1);
-
-    return out;
-}
-
-NetworkParams buildPerceptronParams() {
-    NetworkParams out = NetworkParams();
-
-    out.kernel_source_path = "src/kernels/perceptron.cl";
-    std::vector<std::vector<int>> hiddenLayerParams = { { 4, 1 }, { 3, 0 } };
-    out.numSamples = 4;
-    out.numInputs = 2;
-    out.layerSizes = { out.numInputs };
-    out.layerActivations = { 0 };
-    out.numOutputs = 1;
-
-    out.inputLayerParams = LayerParams(out.numInputs, 1, 1);
-
-    out.numNeurons = out.numInputs;
-    out.numWeights = 0;
-    out.numLayers = 1;
-
-    out.maxNeuronInFwd = out.numOutputs;
-
-    int previousLayerSize = out.numInputs;
-    for (auto data : hiddenLayerParams)
-    {
-        LayerParams hiddenP = LayerParams(data[0], 1, 1);
-        if (data[0] > out.maxNeuronInFwd)
-            out.maxNeuronInFwd = data[0];
-        out.hiddenLayerParams.push_back(hiddenP);
-        out.layerSizes.push_back(data[0]);
-        out.layerActivations.push_back(data[1]);
-
-        out.numNeurons += data[0];
-        out.numWeights += data[0] * previousLayerSize;
-        ++out.numLayers;
-        previousLayerSize = data[0];
-    }
-
-    ++out.numLayers;
-    out.layerSizes.push_back(out.numOutputs);
-    out.numWeights += out.numOutputs * previousLayerSize;
-    out.numNeurons += out.numOutputs;
-    out.outputLayerParams = LayerParams(out.numOutputs, 1, 1);
-
-    return out;
-}
-
-
 std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> convert(std::pair<std::vector<std::vector<uint8_t>>, std::vector<std::vector<float>>> in) {
     std::vector<std::vector<float>> floatInput;
 
@@ -123,10 +36,6 @@ std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> load
 
 int main() {
     Graphics graphics = Graphics();
-    
-    NetworkParams perceptronNetworkParams = buildPerceptronParams();
-    
-    NeuralNetwork<float> network = NeuralNetwork<float>(perceptronNetworkParams);
 
     std::vector<std::vector<float>> inputs = {
             { 0.0f, 0.0f },
@@ -142,15 +51,26 @@ int main() {
        { 1.0f }
     };
 
+    NetworkParams perceptronNetworkParams = NetworkParams(
+        "src/kernels/perceptron.cl",
+        inputs[0].size(),
+        outputs[0].size(),
+        0,
+        { { 1, { 4, 3 } } },
+        inputs.size()
+    );
+    int batchSize = 4;
+    float learningRate = 1.0f;
+    NeuralNetwork<float> network = NeuralNetwork<float>(perceptronNetworkParams);
     std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> trainingData = std::make_pair(inputs, outputs);
+
     /*
     NetworkParams mnistNetworkParams = buildMNISTParams();
     NeuralNetwork<float> network = NeuralNetwork<float>(mnistNetworkParams);
     std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> trainingData = loadMNISTData();
     */
-
     GLuint iterations = 10000;
-    network.train(trainingData, iterations, iterations / 10);
+    network.train(trainingData, iterations, iterations / 10, batchSize, learningRate);
 
     int iter = 0;
     auto last_prediction_time = std::chrono::high_resolution_clock::now();  // initialize timer

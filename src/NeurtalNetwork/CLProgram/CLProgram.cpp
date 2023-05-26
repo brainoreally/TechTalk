@@ -116,6 +116,7 @@ void CLProgram::setupNetworkOpenCL(NetworkParams* params) {
     createBuffer<unsigned int>("networkCounts", 10); // [0: numNeuronsPerSample, 1: numWeightsPerSample, 2: numLayers, 3: inputLayerSize, , 4: outputLayerSize, 5: numSamples, 6: trainingLeft, 7: epoch, 8: batch size, 9: batch#]
     createBuffer<unsigned int>("layerSizes", params->numLayers); // sizes (#neurons) of each weighted layer
     createBuffer<unsigned int>("layerActivations", params->numLayers); // enum for choosing layer activation method (0 = sigmod, 1 = relu)
+    createBuffer<float>("learningRate", 1); // float used to set learning rate
     createBuffer<float>("correctOutput", params->numOutputs * params->numSamples); // float collection - #neurons in network + biases - store all network/layer/node values
     createBuffer<float>("neuronValues", params->numNeurons * params->numSamples); // float collection - #neurons in network + biases - store all network/layer/node values
     createBuffer<float>("weights", params->numWeights); // float collection - #values with a weight (inputs on layers + bias) - store all weights in network/layers
@@ -126,7 +127,7 @@ void CLProgram::setupNetworkOpenCL(NetworkParams* params) {
         { "network_output", { "networkCounts", "layerSizes", "correctOutput", "neuronValues", "weights", "biases" }},
         { "batch_output", { "networkCounts" }},
         { "forward_pass", { "networkCounts", "layerSizes", "layerActivations", "neuronValues", "weights", "biases" }},
-        { "backward_pass", { "networkCounts", "layerSizes", "layerActivations", "correctOutput", "neuronValues", "weights", "biases", "weightDerivitiveOut" }},
+        { "backward_pass", { "networkCounts", "layerSizes", "layerActivations", "learningRate", "correctOutput", "neuronValues", "weights", "biases", "weightDerivitiveOut" }},
     };
     for (KernelParam param : network_kernels)
     {

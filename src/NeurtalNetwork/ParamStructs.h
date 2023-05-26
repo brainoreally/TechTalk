@@ -29,6 +29,48 @@ struct NetworkParams {
         inputLayerParams(LayerParams()), hiddenLayerParams({}), outputLayerParams(LayerParams()) {}
     NetworkParams(LayerParams inputLayerParam, std::vector<LayerParams> hiddenLayerParam, LayerParams outputLayerParam) :
         inputLayerParams(inputLayerParam), hiddenLayerParams(hiddenLayerParam), outputLayerParams(outputLayerParam) {}
+    NetworkParams(const char* kernelSourcePath, unsigned int numInput, int numOutput, unsigned int outputActivation, std::vector<std::pair<int, std::vector<int>>> hiddenLayerParam, int numSample) {
+        kernel_source_path = kernelSourcePath;
+        numSamples = numSample;
+        numInputs = numInput;
+        layerSizes = { numInputs };
+        layerActivations = { };
+        numOutputs = numOutput;
+
+        inputLayerParams = LayerParams(numInputs, 1, 1);
+
+        numNeurons = numInputs;
+        numWeights = 0;
+        numLayers = 1;
+
+        maxNeuronInFwd = numOutputs;
+
+        int previousLayerSize = numInputs;
+        for (std::pair<int, std::vector<int>> hiddenParams : hiddenLayerParam)
+        {
+            for (int hiddenL : hiddenParams.second) {
+                LayerParams hiddenP = LayerParams(hiddenL, 1, 1);
+                if (hiddenL > maxNeuronInFwd)
+                    maxNeuronInFwd = hiddenL;
+
+                layerSizes.push_back(hiddenL);
+                hiddenLayerParams.push_back(hiddenP);
+                layerActivations.push_back(hiddenParams.first);
+
+                numNeurons += hiddenL;
+                numWeights += hiddenL * previousLayerSize;
+                ++numLayers;
+                previousLayerSize = hiddenL;
+            }
+        }
+
+        ++numLayers;
+        layerSizes.push_back(numOutputs);
+        layerActivations.push_back(outputActivation);
+        numWeights += numOutputs * previousLayerSize;
+        numNeurons += numOutputs;
+        outputLayerParams = LayerParams(numOutputs, 1, 1);
+    }
 
     LayerParams inputLayerParams;
     std::vector<LayerParams> hiddenLayerParams;
