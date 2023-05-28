@@ -141,10 +141,17 @@ __kernel void forward_pass(
 			else if (layerActivations[currentLayer - 1] == 2) {
 				//softmax activation
 				float sum = 0.0f;
+				float maxVal;
 				for (int neuronIter = 0; neuronIter < layerSizes[currentLayer]; neuronIter++) {
-					sum += exp(dot_prod(weights, neuronValues, layerSizes[currentLayer - 1], nSOff + layerOffset - layerSizes[currentLayer - 1], weightOffset + (neuronIter * layerSizes[currentLayer - 1])) + biases[layerOffset + neuronIter]);
+					float nVal = dot_prod(weights, neuronValues, layerSizes[currentLayer - 1], nSOff + layerOffset - layerSizes[currentLayer - 1], weightOffset + (neuronIter * layerSizes[currentLayer - 1])) + biases[layerOffset + neuronIter];
+					if (maxVal < nVal)
+						maxVal = nVal;
 				}
-				neuronValues[nOff] = exp(dot_prod(weights, neuronValues, layerSizes[currentLayer - 1], nSOff + layerOffset - layerSizes[currentLayer - 1], weightOffset + (neuronID * layerSizes[currentLayer - 1])) + biases[layerOffset + neuronID]) / sum;
+				for (int neuronIter = 0; neuronIter < layerSizes[currentLayer]; neuronIter++) {
+					float nVal = dot_prod(weights, neuronValues, layerSizes[currentLayer - 1], nSOff + layerOffset - layerSizes[currentLayer - 1], weightOffset + (neuronIter * layerSizes[currentLayer - 1])) + biases[layerOffset + neuronIter];
+					sum += exp(nVal - maxVal);
+				}
+				neuronValues[nOff] = exp((dot_prod(weights, neuronValues, layerSizes[currentLayer - 1], nSOff + layerOffset - layerSizes[currentLayer - 1], weightOffset + (neuronID * layerSizes[currentLayer - 1])) + biases[layerOffset + neuronID]) - maxVal) / sum;
 			} else {
 				neuronValues[nOff] = sigmoid_activation(dot_prod(weights, neuronValues, layerSizes[currentLayer - 1], nSOff + layerOffset - layerSizes[currentLayer - 1], weightOffset + (neuronID * layerSizes[currentLayer - 1])) + biases[layerOffset + neuronID]);
 			}
@@ -203,11 +210,19 @@ __kernel void backward_pass(
 		} else if (layerActivations[currentLayer - 1] == 2) {
 			//softmax derivitive
 			float sum = 0.0f;
+			float maxVal = 0.0f;
 			for (int neuronIter = 0; neuronIter < layerSizes[currentLayer]; neuronIter++) {
-				sum += exp(dot_prod(weights, neuronValues, layerSizes[currentLayer - 1], nSOff + layerOffset - layerSizes[currentLayer - 1], weightOffset + (neuronIter * layerSizes[currentLayer - 1])) + biases[layerOffset + neuronIter]);
+				float nVal = dot_prod(weights, neuronValues, layerSizes[currentLayer - 1], nSOff + layerOffset - layerSizes[currentLayer - 1], weightOffset + (neuronIter * layerSizes[currentLayer - 1])) + biases[layerOffset + neuronIter];
+				if (maxVal < nVal)
+					maxVal = nVal;
+			}
+
+			for (int neuronIter = 0; neuronIter < layerSizes[currentLayer]; neuronIter++) {
+				float nVal = dot_prod(weights, neuronValues, layerSizes[currentLayer - 1], nSOff + layerOffset - layerSizes[currentLayer - 1], weightOffset + (neuronIter * layerSizes[currentLayer - 1])) + biases[layerOffset + neuronIter];
+				sum += exp(nVal - maxVal);
 			}
 			
-			float val = exp(dot_prod(weights, neuronValues, layerSizes[currentLayer - 1], nSOff + layerOffset - layerSizes[currentLayer - 1], weightOffset + (neuronID * layerSizes[currentLayer - 1])) + biases[layerOffset + neuronID]);
+			float val = exp((dot_prod(weights, neuronValues, layerSizes[currentLayer - 1], nSOff + layerOffset - layerSizes[currentLayer - 1], weightOffset + (neuronID * layerSizes[currentLayer - 1])) + biases[layerOffset + neuronID]) - maxVal);
 			weightDerivitiveOut[nOff] = loss * ((val * sum - val * val) / (sum * sum));
 			//printf("weightD: %f, loss: %f, val: %f, sum: %f\n", weightDerivitiveOut[nOff], loss, val, sum);
 		}
