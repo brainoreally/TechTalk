@@ -36,7 +36,7 @@ std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> load
 
 int main() {
     Graphics graphics = Graphics();
-    
+    /*
     std::vector<std::vector<float>> inputs = {
             { 0.0f, 0.0f },
             { 1.0f, 0.0f },
@@ -63,23 +63,37 @@ int main() {
     float learningRate = 1.0f;
     NeuralNetwork<float> network = NeuralNetwork<float>(perceptronNetworkParams);
     std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> trainingData = std::make_pair(inputs, outputs);
+    */
     
-    /*
-    std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> trainingData = loadMNISTData();
+    //std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> trainingData = loadMNISTData();
+    std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> trainingData = { 
+        {
+            { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, },
+            { 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, },
+            { 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, },
+            { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, },
+        },
+        {
+           { 0.0f, 0.0f, 0.0f, },
+           { 0.0f, 0.0f, 1.0f, },
+           { 0.0f, 1.0f, 0.0f, },
+           { 1.0f, 0.0f, 0.0f, }
+        }
+    };
     NetworkParams mnistNetworkParams = NetworkParams(
         "src/kernels/perceptron.cl",
         trainingData.first[0].size(),
         trainingData.second[0].size(),
-        0,
-        { { 0, { 16, 16, 16, 16, } }, },
+        2,
+        { },
         trainingData.first.size()
     );
     NeuralNetwork<float> network = NeuralNetwork<float>(mnistNetworkParams);
 
-    int batchSize = 2000;
+    int batchSize = 4;
     int learningRate = 1.0f;
-    */
-    GLuint iterations = 50000;
+    
+    GLuint iterations = 100;
     network.train(trainingData, iterations, iterations / 10, batchSize, learningRate);
 
     int iter = 0;
@@ -97,10 +111,7 @@ int main() {
         }
         
         graphics.setupScene();
-
         graphics.drawNeurons(network.returnNetworkValues(), network.returnWeightValues(), network.returnBiasValues());
-
-
         graphics.swapBuffersAndPoll();
         
         std::this_thread::sleep_for(std::chrono::milliseconds(16));  // limit frame rate to ~60 fps

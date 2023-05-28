@@ -89,7 +89,7 @@ public:
 
 		int offset = 0;
 		numSamples = trainingData.first.size();
-
+		int inputSize = trainingData.first[0].size();
 		int iter = 0;
 		for (std::vector<Datatype> sampleInput : trainingData.first) {
 			if (iter < numSamples) {
@@ -114,8 +114,8 @@ public:
 			for (int batch = 0; batch < (numSamples / batchSize); batch++) {
 				CLProgram::queueKernel("forward_pass", batchSize * maxNeuronInFwd, maxNeuronInFwd);
 				CLProgram::queueKernel("backward_pass", batchSize * maxNeuronInFwd, maxNeuronInFwd);
-				CLProgram::queueKernel("train_weights", 1, 1);
-				CLProgram::queueKernel("train_biases", 1, 1);
+				CLProgram::queueKernel("train_biases", numNeurons - inputSize, numNeurons - inputSize);
+				CLProgram::queueKernel("train_weights", maxNeuronInFwd * (numLayers - 1), maxNeuronInFwd);
 				CLProgram::queueKernel("batch_output", 1, 1);
 			}
 			CLProgram::queueKernel("network_output", 1, 1);

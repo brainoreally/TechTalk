@@ -32,4 +32,20 @@ public:
 		out.push_back(CLProgram::readBuffer<float>("biases", this->previousLayer->getNeuronValueOffset(), this->numNeurons));
 		return out;
 	}
+
+	void finishLayerSetup() override {
+
+		for (int i = 0; i < this->numWeights(); i++) {
+			this->weights.push_back(0.0f);
+		}
+
+		for (int i = 0; i < this->numNeuronValues(); i++) {
+			this->biases.push_back(0.0f);
+		}
+
+		CLProgram::writeBuffer<Datatype>("weights", this->previousLayer->getWeightsOffset() * sizeof(Datatype), this->weights);
+		CLProgram::writeBuffer<Datatype>("biases", this->previousLayer->getNeuronValueOffset() * sizeof(Datatype), this->biases);
+		this->numWeightedValGlobal = this->numWeights();
+		this->previousLayer->finishLayerSetup();
+	}
 };
