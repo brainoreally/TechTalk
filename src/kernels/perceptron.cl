@@ -13,6 +13,15 @@ float dot_prod(
 	return sum;
 }
 
+float clip(float val, float min, float max) {
+	if (val <= 0.0f)
+		return min;
+	else if (val > max)
+		return max;
+	else
+		return val;
+}
+
 float sigmoid_derivitive(
 	float value
 )
@@ -49,24 +58,56 @@ float relu_activation(
 __kernel void network_output(
 	__global unsigned int* networkCounts,
 	__global unsigned int* layerSizes,
+	__global unsigned int* layerActivations,
 	__global float* correctOutput,
 	__global float* neuronValues,
 	__global float* weights,
-	__global float* biases
+	__global float* biases,
+	__global float* bestLoss
 )
 {
+	float loss = 0.0f;
 	if (networkCounts[6] % networkCounts[7] == 0) {
-		float loss = 0.0f;
+		float accuracy = 0.0f;
+
 		int outputLayerOff = networkCounts[0] - networkCounts[4];
 
-		for (unsigned int sampleIter = 0; sampleIter < networkCounts[8]; sampleIter++)
-			for (unsigned int neuronIter = 0; neuronIter < networkCounts[4]; neuronIter++)
-				loss += -correctOutput[(sampleIter * networkCounts[4]) + neuronIter] * log(neuronValues[(sampleIter * networkCounts[0]) + outputLayerOff + neuronIter]);
-		loss /= (networkCounts[8] * networkCounts[4]);
-		
-		printf("Epoch: %i - Error: %f\n", networkCounts[6], loss);
+		for (unsigned int sampleIter = 0; sampleIter < networkCounts[8]; sampleIter++) {
+			float correctIter = 0;
+			float maxValue = 0.0f;
+			float maxIter = 0;
+			for (unsigned int neuronIter = 0; neuronIter < networkCounts[4]; neuronIter++) {
 
-		/*
+				if (layerActivations[networkCounts[2] - 2] == 2) {
+					loss += -correctOutput[(sampleIter * networkCounts[4]) + neuronIter] * log(clip(neuronValues[(sampleIter * networkCounts[0]) + outputLayerOff + neuronIter], 1e-7, 1 - 1e-7));
+					if (log(clip(neuronValues[(sampleIter * networkCounts[0]) + outputLayerOff + neuronIter], 1e-7, 1 - 1e-7)) > maxValue) {
+						maxValue = log(clip(neuronValues[(sampleIter * networkCounts[0]) + outputLayerOff + neuronIter], 1e-7, 1 - 1e-7));
+						maxIter = (sampleIter * networkCounts[0]) + outputLayerOff + neuronIter;
+					}
+					if (correctOutput[(sampleIter * networkCounts[4]) + neuronIter] == 1)
+						correctIter = (sampleIter * networkCounts[4]) + neuronIter;
+				}
+				else {
+					float val = correctOutput[(sampleIter * networkCounts[4]) + neuronIter] - neuronValues[(sampleIter * networkCounts[0]) + outputLayerOff + neuronIter];
+					loss += val;
+					accuracy += val < 0.01 && val > -0.01;
+				}
+			}
+			if (layerActivations[networkCounts[2] - 2] == 2)
+				accuracy += maxIter == correctIter;
+		}
+
+		if (layerActivations[networkCounts[2] - 2] == 2) {
+			accuracy /= networkCounts[8];
+			loss /= networkCounts[8];
+		}
+		else {
+			loss /= networkCounts[8] * networkCounts[4];
+			accuracy /= networkCounts[8] * networkCounts[4];
+		}
+
+		printf("Epoch: %i - Loss: %f - Acc: %f\n", networkCounts[6], loss, accuracy);
+	/*
 		printf("Network Values:\n");
 		for (int sampleIter = 0; sampleIter < 4; sampleIter++) {
 			int layerOffset = 0;
@@ -102,9 +143,17 @@ __kernel void network_output(
 			layerOffset += layerSizes[layerIter] * layerSizes[layerIter - 1];
 		}
 		printf("\n");*/
+
+		networkCounts[9] = 0;
 	}
-	networkCounts[9] = 0;
 	--networkCounts[6];
+
+	if ((loss * -1) < bestLoss[0] || bestLoss[0] == 0.0f)
+		bestLoss[0] = loss * -1;
+	/*else {
+		printf("Loss optimisation reached at cycle %i; ending early.\n", networkCounts[6]);
+		networkCounts[6] = 0;
+	}*/
 }
 
 __kernel void batch_output(
@@ -195,13 +244,21 @@ __kernel void backward_pass(
 		int nOff = nSOff + layerOffset + neuronID;
 
 		float loss = 0.0f;
-		if (layerActivations[currentLayer - 1] == 2) {
-			for (int iter = 0; iter < networkCounts[4]; iter++)
-				loss += -correctOutput[(sampleIndex * networkCounts[4]) + iter] * log(neuronValues[nSOff + layerOffset + iter]);
+
+		if (layerActivations[networkCounts[2] - 2] == 2)
+		{
+			for (unsigned int sampleIter = 0; sampleIter < networkCounts[8]; sampleIter++) {
+				for (unsigned int neuronIter = 0; neuronIter < networkCounts[4]; neuronIter++) {
+					loss += -correctOutput[(sampleIter * networkCounts[4]) + neuronIter] * log(clip(neuronValues[(sampleIter * networkCounts[0]) + layerOffset + neuronIter], 1e-7, 1 - 1e-7));
+				}
+			}
+
+			loss /= networkCounts[8];
 		}
 		else {
-			for (int iter = 0; iter < networkCounts[4]; iter++)
-				loss += correctOutput[(sampleIndex * networkCounts[4]) + iter] - neuronValues[nSOff + layerOffset + iter];
+			for (unsigned int neuronIter = 0; neuronIter < networkCounts[4]; neuronIter++) {
+				loss += correctOutput[(sampleIndex * networkCounts[4]) + neuronIter] - clip(neuronValues[(sampleIndex * networkCounts[0]) + layerOffset + neuronIter], 1e-7, 1 - 1e-7);
+			}
 			loss /= networkCounts[4];
 		}
 
@@ -295,7 +352,7 @@ __kernel void train_biases(
 		}
 	}
 	//printf("avgChange: %f\n", avgChange);
-	biases[biasID] += avgChange / networkCounts[8];
+	biases[biasID] -= avgChange / networkCounts[8];
 }
 
 __kernel void train_weights(
@@ -338,7 +395,7 @@ __kernel void train_weights(
 			}
 			//printf("weightID: %i, avgChange: %f\n", weightID, avgChange);
 
-			weights[weightID] += avgChange;
+			weights[weightID] -= avgChange;
 		}
 	}
 }

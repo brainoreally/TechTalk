@@ -1,13 +1,6 @@
 #include "Graphics.h"
-#include <Windows.h>
 
 Graphics::Graphics() {
-    // Get the handle to the console window
-    HWND consoleWindow = GetConsoleWindow();
-
-    // Set the position of the console window
-    SetWindowPos(consoleWindow, NULL, 0, 50, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-
     // Define screen size
     resolutionX = 2400;
     resolutionY = 2000;

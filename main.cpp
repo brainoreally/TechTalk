@@ -1,9 +1,9 @@
 #include <chrono>  // for timing
 #include <thread>  // for sleeping
 #include "src/Graphics/Graphics.h"
-#include "src/NeurtalNetwork/NeuralNetwork.h"
+#include "src/NeuralNetwork/NeuralNetwork.h"
 #include "src/MNISTLoader/MNISTLoader.h"
-#include "src/NeurtalNetwork/CLProgram/CLProgram.h"
+#include "src/NeuralNetwork/CLProgram/CLProgram.h"
 
 std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> convert(std::pair<std::vector<std::vector<uint8_t>>, std::vector<std::vector<float>>> in) {
     std::vector<std::vector<float>> floatInput;
@@ -36,6 +36,7 @@ std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> load
 
 int main() {
     Graphics graphics = Graphics();
+
     /*
     std::vector<std::vector<float>> inputs = {
             { 0.0f, 0.0f },
@@ -68,23 +69,23 @@ int main() {
     //std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> trainingData = loadMNISTData();
     std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> trainingData = { 
         {
-            { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, },
-            { 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, },
-            { 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, },
-            { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, },
+            { 0.0f, 0.0f, },
+            { 1.0f, 0.0f, },
+            { 0.0f, 1.0f, },
+            { 1.0f, 1.0f, },
         },
         {
-           { 0.0f, 0.0f, 0.0f, },
-           { 0.0f, 0.0f, 1.0f, },
-           { 0.0f, 1.0f, 0.0f, },
-           { 1.0f, 0.0f, 0.0f, }
+           { 0.0f },
+           { 1.0f },
+           { 1.0f },
+           { 1.0f }
         }
     };
     NetworkParams mnistNetworkParams = NetworkParams(
         "src/kernels/perceptron.cl",
         trainingData.first[0].size(),
         trainingData.second[0].size(),
-        2,
+        0,
         { },
         trainingData.first.size()
     );
@@ -93,7 +94,7 @@ int main() {
     int batchSize = 4;
     int learningRate = 1.0f;
     
-    GLuint iterations = 100;
+    GLuint iterations = 10;
     network.train(trainingData, iterations, iterations / 10, batchSize, learningRate);
 
     int iter = 0;
